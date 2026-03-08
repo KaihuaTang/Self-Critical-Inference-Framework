@@ -1,0 +1,191 @@
+# python ./tools/generate_dataset.py --model-name Qwen2-VL-7B --config-path ./tools/generate_dataset.yaml --source-root ~/LMUData --save-custom
+
+Load 1500 items from MMStar
+====== MMStar ======
+Splite MMStar into Val=300, Test=1200, all=300+1200=1500
+Get biased MMStar with Val-Visual=57, Test-Visual=255
+Get biased MMStar with Val-Textual=13, Test-Textual=53
+Get biased MMStar with Val-Combined=62, Test-Combined=286
+Save filtered data and biased data
+Loading raw MMStar: 1500 items
+Data Type (total_val): Saving 300 out of 1500 raw items, expected to be 300
+Data Type (total_test): Saving 1200 out of 1500 raw items, expected to be 1200
+Data Type (VisualCF_val): Saving 57 out of 1500 raw items, expected to be 57
+Data Type (VisualCF_test): Saving 255 out of 1500 raw items, expected to be 255
+Data Type (TextualCF_val): Saving 13 out of 1500 raw items, expected to be 13
+Data Type (TextualCF_test): Saving 53 out of 1500 raw items, expected to be 53
+Data Type (Biased_val): Saving 62 out of 1500 raw items, expected to be 62
+Data Type (Biased_test): Saving 286 out of 1500 raw items, expected to be 286
+Load 2374 items from MME
+====== MME ======
+Splite MME into Val=475, Test=1899, all=475+1899=2374
+Get biased MME with Val-Visual=45, Test-Visual=145
+Get biased MME with Val-Textual=51, Test-Textual=169
+Get biased MME with Val-Combined=69, Test-Combined=226
+Save filtered data and biased data
+Loading raw MME: 2374 items
+Data Type (total_val): Saving 475 out of 2374 raw items, expected to be 475
+Data Type (total_test): Saving 1899 out of 2374 raw items, expected to be 1899
+Data Type (VisualCF_val): Saving 45 out of 2374 raw items, expected to be 45
+Data Type (VisualCF_test): Saving 145 out of 2374 raw items, expected to be 145
+Data Type (TextualCF_val): Saving 51 out of 2374 raw items, expected to be 51
+Data Type (TextualCF_test): Saving 169 out of 2374 raw items, expected to be 169
+Data Type (Biased_val): Saving 69 out of 2374 raw items, expected to be 69
+Data Type (Biased_test): Saving 226 out of 2374 raw items, expected to be 226
+Load 900 items from ViLP
+====== ViLP ======
+Splite ViLP into Val=180, Test=720, all=180+720=900
+Get biased ViLP with Val-Visual=51, Test-Visual=182
+Get biased ViLP with Val-Textual=31, Test-Textual=142
+Get biased ViLP with Val-Combined=74, Test-Combined=287
+Save filtered data and biased data
+Loading raw ViLP: 900 items
+Data Type (total_val): Saving 180 out of 900 raw items, expected to be 180
+Data Type (total_test): Saving 720 out of 900 raw items, expected to be 720
+Data Type (VisualCF_val): Saving 51 out of 900 raw items, expected to be 51
+Data Type (VisualCF_test): Saving 182 out of 900 raw items, expected to be 182
+Data Type (TextualCF_val): Saving 31 out of 900 raw items, expected to be 31
+Data Type (TextualCF_test): Saving 142 out of 900 raw items, expected to be 142
+Data Type (Biased_val): Saving 74 out of 900 raw items, expected to be 74
+Data Type (Biased_test): Saving 287 out of 900 raw items, expected to be 287
+Load 2040 items from CCBench
+====== CCBench ======
+Splite CCBench into Val=408, Test=1632, all=408+1632=2040
+Get biased CCBench with Val-Visual=42, Test-Visual=266
+Get biased CCBench with Val-Textual=11, Test-Textual=44
+Get biased CCBench with Val-Combined=52, Test-Combined=295
+Save filtered data and biased data
+Loading raw CCBench: 2040 items
+Data Type (total_val): Saving 408 out of 2040 raw items, expected to be 408
+Data Type (total_test): Saving 1632 out of 2040 raw items, expected to be 1632
+Data Type (VisualCF_val): Saving 42 out of 2040 raw items, expected to be 42
+Data Type (VisualCF_test): Saving 266 out of 2040 raw items, expected to be 266
+Data Type (TextualCF_val): Saving 11 out of 2040 raw items, expected to be 11
+Data Type (TextualCF_test): Saving 44 out of 2040 raw items, expected to be 44
+Data Type (Biased_val): Saving 52 out of 2040 raw items, expected to be 52
+Data Type (Biased_test): Saving 295 out of 2040 raw items, expected to be 295
+Load 4876 items from MMBench_DEV_CN_V11
+====== MMBench_DEV_CN_V11 ======
+Splite MMBench_DEV_CN_V11 into Val=976, Test=3900, all=976+3900=4876
+Get biased MMBench_DEV_CN_V11 with Val-Visual=86, Test-Visual=292
+Get biased MMBench_DEV_CN_V11 with Val-Textual=17, Test-Textual=71
+Get biased MMBench_DEV_CN_V11 with Val-Combined=94, Test-Combined=341
+Save filtered data and biased data
+Loading raw MMBench_DEV_CN_V11: 4876 items
+Data Type (total_val): Saving 976 out of 4876 raw items, expected to be 976
+Data Type (total_test): Saving 3900 out of 4876 raw items, expected to be 3900
+Data Type (VisualCF_val): Saving 86 out of 4876 raw items, expected to be 86
+Data Type (VisualCF_test): Saving 292 out of 4876 raw items, expected to be 292
+Data Type (TextualCF_val): Saving 17 out of 4876 raw items, expected to be 17
+Data Type (TextualCF_test): Saving 71 out of 4876 raw items, expected to be 71
+Data Type (Biased_val): Saving 94 out of 4876 raw items, expected to be 94
+Data Type (Biased_test): Saving 341 out of 4876 raw items, expected to be 341
+Load 4876 items from MMBench_DEV_EN_V11
+====== MMBench_DEV_EN_V11 ======
+Splite MMBench_DEV_EN_V11 into Val=976, Test=3900, all=976+3900=4876
+Get biased MMBench_DEV_EN_V11 with Val-Visual=63, Test-Visual=267
+Get biased MMBench_DEV_EN_V11 with Val-Textual=18, Test-Textual=84
+Get biased MMBench_DEV_EN_V11 with Val-Combined=76, Test-Combined=321
+Save filtered data and biased data
+Loading raw MMBench_DEV_EN_V11: 4876 items
+Data Type (total_val): Saving 976 out of 4876 raw items, expected to be 976
+Data Type (total_test): Saving 3900 out of 4876 raw items, expected to be 3900
+Data Type (VisualCF_val): Saving 63 out of 4876 raw items, expected to be 63
+Data Type (VisualCF_test): Saving 267 out of 4876 raw items, expected to be 267
+Data Type (TextualCF_val): Saving 18 out of 4876 raw items, expected to be 18
+Data Type (TextualCF_test): Saving 84 out of 4876 raw items, expected to be 84
+Data Type (Biased_val): Saving 76 out of 4876 raw items, expected to be 76
+Data Type (Biased_test): Saving 321 out of 4876 raw items, expected to be 321
+Finished
+
+
+
+
+
+# python ./tools/generate_dataset.py --model-name LLaVA-NeXT-8B --config-path ./tools/generate_dataset.yaml --source-root ~/LMUData
+
+Load 1500 items from MMStar
+====== MMStar ======
+Splite MMStar into Val=300, Test=1200, all=300+1200=1500
+Get biased MMStar with Val-Visual=106, Test-Visual=342
+Get biased MMStar with Val-Textual=69, Test-Textual=255
+Get biased MMStar with Val-Combined=141, Test-Combined=494
+Save filtered data and biased data
+Loading raw MMStar: 1500 items
+Data Type (VisualCF_val): Saving 106 out of 1500 raw items, expected to be 106
+Data Type (VisualCF_test): Saving 342 out of 1500 raw items, expected to be 342
+Data Type (TextualCF_val): Saving 69 out of 1500 raw items, expected to be 69
+Data Type (TextualCF_test): Saving 255 out of 1500 raw items, expected to be 255
+Data Type (Biased_val): Saving 141 out of 1500 raw items, expected to be 141
+Data Type (Biased_test): Saving 494 out of 1500 raw items, expected to be 494
+Load 2374 items from MME
+====== MME ======
+Splite MME into Val=475, Test=1899, all=475+1899=2374
+Get biased MME with Val-Visual=29, Test-Visual=132
+Get biased MME with Val-Textual=130, Test-Textual=487
+Get biased MME with Val-Combined=134, Test-Combined=516
+Save filtered data and biased data
+Loading raw MME: 2374 items
+Data Type (VisualCF_val): Saving 29 out of 2374 raw items, expected to be 29
+Data Type (VisualCF_test): Saving 132 out of 2374 raw items, expected to be 132
+Data Type (TextualCF_val): Saving 130 out of 2374 raw items, expected to be 130
+Data Type (TextualCF_test): Saving 487 out of 2374 raw items, expected to be 487
+Data Type (Biased_val): Saving 134 out of 2374 raw items, expected to be 134
+Data Type (Biased_test): Saving 516 out of 2374 raw items, expected to be 516
+Load 900 items from ViLP
+====== ViLP ======
+Splite ViLP into Val=180, Test=720, all=180+720=900
+Get biased ViLP with Val-Visual=51, Test-Visual=213                                                                                                                                                      
+Get biased ViLP with Val-Textual=16, Test-Textual=95
+Get biased ViLP with Val-Combined=66, Test-Combined=278
+Save filtered data and biased data
+Loading raw ViLP: 900 items
+Data Type (VisualCF_val): Saving 51 out of 900 raw items, expected to be 51
+Data Type (VisualCF_test): Saving 213 out of 900 raw items, expected to be 213
+Data Type (TextualCF_val): Saving 16 out of 900 raw items, expected to be 16
+Data Type (TextualCF_test): Saving 95 out of 900 raw items, expected to be 95
+Data Type (Biased_val): Saving 66 out of 900 raw items, expected to be 66
+Data Type (Biased_test): Saving 278 out of 900 raw items, expected to be 278
+Load 2040 items from CCBench
+====== CCBench ======
+Splite CCBench into Val=408, Test=1632, all=408+1632=2040
+Get biased CCBench with Val-Visual=122, Test-Visual=513
+Get biased CCBench with Val-Textual=36, Test-Textual=163
+Get biased CCBench with Val-Combined=151, Test-Combined=620
+Save filtered data and biased data
+Loading raw CCBench: 2040 items
+Data Type (VisualCF_val): Saving 122 out of 2040 raw items, expected to be 122
+Data Type (VisualCF_test): Saving 513 out of 2040 raw items, expected to be 513
+Data Type (TextualCF_val): Saving 36 out of 2040 raw items, expected to be 36
+Data Type (TextualCF_test): Saving 163 out of 2040 raw items, expected to be 163
+Data Type (Biased_val): Saving 151 out of 2040 raw items, expected to be 151
+Data Type (Biased_test): Saving 620 out of 2040 raw items, expected to be 620
+Load 4876 items from MMBench_DEV_CN_V11
+====== MMBench_DEV_CN_V11 ======
+Splite MMBench_DEV_CN_V11 into Val=976, Test=3900, all=976+3900=4876
+Get biased MMBench_DEV_CN_V11 with Val-Visual=138, Test-Visual=482
+Get biased MMBench_DEV_CN_V11 with Val-Textual=57, Test-Textual=256
+Get biased MMBench_DEV_CN_V11 with Val-Combined=171, Test-Combined=656
+Save filtered data and biased data
+Loading raw MMBench_DEV_CN_V11: 4876 items
+Data Type (VisualCF_val): Saving 138 out of 4876 raw items, expected to be 138
+Data Type (VisualCF_test): Saving 482 out of 4876 raw items, expected to be 482
+Data Type (TextualCF_val): Saving 57 out of 4876 raw items, expected to be 57
+Data Type (TextualCF_test): Saving 256 out of 4876 raw items, expected to be 256
+Data Type (Biased_val): Saving 171 out of 4876 raw items, expected to be 171
+Data Type (Biased_test): Saving 656 out of 4876 raw items, expected to be 656
+Load 4876 items from MMBench_DEV_EN_V11
+====== MMBench_DEV_EN_V11 ======
+Splite MMBench_DEV_EN_V11 into Val=976, Test=3900, all=976+3900=4876
+Get biased MMBench_DEV_EN_V11 with Val-Visual=118, Test-Visual=473
+Get biased MMBench_DEV_EN_V11 with Val-Textual=88, Test-Textual=331
+Get biased MMBench_DEV_EN_V11 with Val-Combined=183, Test-Combined=706
+Save filtered data and biased data
+Loading raw MMBench_DEV_EN_V11: 4876 items
+Data Type (VisualCF_val): Saving 118 out of 4876 raw items, expected to be 118
+Data Type (VisualCF_test): Saving 473 out of 4876 raw items, expected to be 473
+Data Type (TextualCF_val): Saving 88 out of 4876 raw items, expected to be 88
+Data Type (TextualCF_test): Saving 331 out of 4876 raw items, expected to be 331
+Data Type (Biased_val): Saving 183 out of 4876 raw items, expected to be 183
+Data Type (Biased_test): Saving 706 out of 4876 raw items, expected to be 706
+Finished

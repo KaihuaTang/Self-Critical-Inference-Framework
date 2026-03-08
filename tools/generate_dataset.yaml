@@ -1,0 +1,25 @@
+# config files
+Qwen2-VL-7B: 
+  base_name: 'Qwen2-VL-7B-Original'
+  base_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/Qwen2-VL-7B-Original/T20250617_G'
+  tcf1_name: 'Qwen2-VL-7B-TCF-V1'
+  tcf1_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/Qwen2-VL-7B-TCF-V1/T20250618_G'
+  tcf2_name: 'Qwen2-VL-7B-TCF-V2'
+  tcf2_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/Qwen2-VL-7B-TCF-V2/T20250618_G'
+  vcf1_name: 'Qwen2-VL-7B-VCF-Color0'
+  vcf1_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/Qwen2-VL-7B-VCF-Color0/T20250617_G'
+  vcf2_name: 'Qwen2-VL-7B-VCF-Noise500'
+  vcf2_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/Qwen2-VL-7B-VCF-Noise500/T20250618_G'
+
+LLaVA-NeXT-8B:
+  base_name: 'LLaVA-NeXT-8B-Original'
+  base_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/LLaVA-NeXT-8B-Original/T20250720_G188e20d1'
+  tcf1_name: 'LLaVA-NeXT-8B-TCF-V1'
+  tcf1_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/LLaVA-NeXT-8B-TCF-V1/T20250721_G188e20d1'
+  tcf2_name: 'LLaVA-NeXT-8B-TCF-V2'
+  tcf2_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/LLaVA-NeXT-8B-TCF-V2/T20250721_G188e20d1'
+  vcf1_name: 'LLaVA-NeXT-8B-VCF-Color0'
+  vcf1_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/LLaVA-NeXT-8B-VCF-Color0/T20250720_G188e20d1'
+  vcf2_name: 'LLaVA-NeXT-8B-VCF-Noise500'
+  vcf2_result_path: '/home/couser/projects/VLMEvalKit-0.2/VLMEvalKit_custom/outputs/LLaVA-NeXT-8B-VCF-Noise500/T20250721_G188e20d1'
+
