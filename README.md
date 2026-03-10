@@ -1,6 +1,6 @@
 # Self-Critical Inference Framework
 
-Our paper [Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework]() is accepted to CVPR 2026.
+Our paper [Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework](https://arxiv.org/abs/2603.07659) is accepted to CVPR 2026.
 
 If you find this project helps your research, please kindly consider citing our paper in your publications.
 ```
