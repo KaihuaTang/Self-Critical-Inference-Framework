@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Critical Inference (SCI) &amp; DRBench: Scaling Test-Time Robustness of Vision-Language Models | CVPR 2026</title>
+<meta name="description" content="Official project page of the CVPR 2026 paper. Self-Critical Inference (SCI) runs multi-round textual and visual counterfactual inference and aggregates logits to mitigate language bias, object hallucination and prompt sensitivity in large vision-language models. DRBench is a model-specific dynamic robustness benchmark.">
+<meta name="keywords" content="Self-Critical Inference, SCI, DRBench, vision-language models, LVLM, robustness, language bias, language sensitivity, object hallucination, counterfactual inference, visual contrastive decoding, test-time scaling, CVPR 2026">
+<meta name="author" content="Kaihua Tang, Jiaxin Qi, Jinli Ou, Yuhua Zheng, Jianqiang Huang">
+<link rel="canonical" href="https://kaihuatang.github.io/Self-Critical-Inference-Framework/">
+<link rel="alternate" hreflang="en" href="https://kaihuatang.github.io/Self-Critical-Inference-Framework/">
+<link rel="alternate" hreflang="zh-CN" href="https://kaihuatang.github.io/Self-Critical-Inference-Framework/zh/">
+<link rel="alternate" type="text/markdown" title="LLM-readable summary" href="llms.txt">
+
+<!-- Google Scholar / Highwire Press -->
+<meta name="citation_title" content="Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework">
+<meta name="citation_author" content="Tang, Kaihua">
+<meta name="citation_author" content="Qi, Jiaxin">
+<meta name="citation_author" content="Ou, Jinli">
+<meta name="citation_author" content="Zheng, Yuhua">
+<meta name="citation_author" content="Huang, Jianqiang">
+<meta name="citation_publication_date" content="2026/03/08">
+<meta name="citation_conference_title" content="Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)">
+<meta name="citation_arxiv_id" content="2603.07659">
+<meta name="citation_pdf_url" content="https://arxiv.org/pdf/2603.07659">
+<meta name="citation_abstract_html_url" content="https://arxiv.org/abs/2603.07659">
+
+<!-- Open Graph -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Self-Critical Inference (SCI) &amp; DRBench | CVPR 2026">
+<meta property="og:description" content="Multi-round counterfactual inference that scales the test-time robustness of vision-language models, plus a model-specific Dynamic Robustness Benchmark.">
+<meta property="og:url" content="https://kaihuatang.github.io/Self-Critical-Inference-Framework/">
+<meta property="og:image" content="https://kaihuatang.github.io/Self-Critical-Inference-Framework/assets/sci-scaling-qwen2vl.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2316130f'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-style='italic' font-size='44' text-anchor='middle' fill='%23ff6b4f'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ScholarlyArticle",
+      "@id": "https://arxiv.org/abs/2603.07659",
+      "headline": "Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework",
+      "name": "Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework",
+      "author": [
+        {"@type": "Person", "name": "Kaihua Tang", "affiliation": {"@type": "Organization", "name": "Tongji University"}, "url": "https://kaihuatang.github.io/"},
+        {"@type": "Person", "name": "Jiaxin Qi", "affiliation": {"@type": "Organization", "name": "Computer Network Information Center, Chinese Academy of Sciences"}},
+        {"@type": "Person", "name": "Jinli Ou", "affiliation": {"@type": "Organization", "name": "University of Chinese Academy of Sciences"}},
+        {"@type": "Person", "name": "Yuhua Zheng", "affiliation": {"@type": "Organization", "name": "HIAS, University of Chinese Academy of Sciences"}},
+        {"@type": "Person", "name": "Jianqiang Huang", "affiliation": {"@type": "Organization", "name": "Computer Network Information Center, Chinese Academy of Sciences"}}
+      ],
+      "datePublished": "2026-03-08",
+      "dateModified": "2026-03-25",
+      "inLanguage": "en",
+      "isPartOf": {"@type": "PublicationIssue", "name": "Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) 2026"},
+      "url": "https://arxiv.org/abs/2603.07659",
+      "sameAs": ["https://arxiv.org/pdf/2603.07659", "https://kaihuatang.github.io/Self-Critical-Inference-Framework/"],
+      "identifier": {"@type": "PropertyValue", "propertyID": "arXiv", "value": "2603.07659"},
+      "keywords": "large vision-language models, robustness, language bias, language sensitivity, object hallucination, counterfactual inference, visual contrastive decoding, test-time scaling, dynamic benchmark",
+      "abstract": "The emergence of Large Language Models (LLMs) has driven rapid progress in multi-modal learning, particularly in the development of Large Vision-Language Models (LVLMs). However, existing LVLM training paradigms place excessive reliance on the LLM component, giving rise to two critical robustness challenges: language bias and language sensitivity. To address both issues simultaneously, we propose a novel Self-Critical Inference (SCI) framework that extends Visual Contrastive Decoding by conducting multi-round counterfactual reasoning through both textual and visual perturbations. This process further introduces a new strategy for improving robustness by scaling the number of counterfactual rounds. Moreover, we also observe that failure cases of LVLMs differ significantly across models, indicating that fixed robustness benchmarks may not be able to capture the true reliability of LVLMs. To this end, we propose the Dynamic Robustness Benchmark (DRBench), a model-specific evaluation framework targeting both language bias and sensitivity issues. Extensive experiments show that SCI consistently outperforms baseline methods on DRBench, and that increasing the number of inference rounds further boosts robustness beyond existing single-step counterfactual reasoning methods."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Self-Critical-Inference-Framework",
+      "description": "Official implementation of Self-Critical Inference (SCI) and the Dynamic Robustness Benchmark (DRBench), built on VLMEvalKit, with TIE, VCD and M3ID baselines for Qwen2-VL-7B and LLaVA-NeXT-8B.",
+      "codeRepository": "https://github.com/KaihuaTang/Self-Critical-Inference-Framework",
+      "programmingLanguage": "Python",
+      "license": "https://www.apache.org/licenses/LICENSE-2.0",
+      "citation": {"@id": "https://arxiv.org/abs/2603.07659"}
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type": "Question", "name": "What is Self-Critical Inference (SCI)?", "acceptedAnswer": {"@type": "Answer", "text": "SCI is an inference framework for large vision-language models. Besides the original input, it runs N textual counterfactual passes (semantically equivalent but lexically different prompts) and M visual counterfactual passes (content-removed images), then combines the next-token logits as p_SCI ∝ exp(TC/τ1)·exp(VC/τ2). TC is the element-wise maximum of logits over prompt variants and enforces prompt consistency; VC is the original logits minus the mean logits under counterfactual images and removes language bias."}},
+        {"@type": "Question", "name": "How is SCI related to Visual Contrastive Decoding (VCD) and Counterfactual VQA?", "acceptedAnswer": {"@type": "Answer", "text": "The paper shows that VCD is equivalent to reweighting the original token probability by exp(TIE/τ), where TIE = Z(v,q) − Z(v*,q) is the Total Indirect Effect used in Counterfactual VQA and τ = 1/α. VCD is the special case of SCI with N=0 and M=1; CF-VQA is the special case with a constant textual term and M=1."}},
+        {"@type": "Question", "name": "What is DRBench?", "acceptedAnswer": {"@type": "Answer", "text": "The Dynamic Robustness Benchmark (DRBench) is a model-specific benchmark. For a given LVLM it evaluates existing datasets under original and counterfactual inputs and extracts a Bias Subset (same incorrect prediction with the original and content-removed images), a Sensitivity Subset (prediction changes under equivalent prompts) and their union, the BS Subset. The paper builds it from MME, MMStar, CCBench, ViLP, MMBench-DEV-EN-V11 and MMBench-DEV-CN-V11."}},
+        {"@type": "Question", "name": "Why do base models score close to 0 on the Bias Subset?", "acceptedAnswer": {"@type": "Answer", "text": "By definition the Bias Subset collects samples on which the base model consistently predicts incorrectly, so the expected accuracy is 0.0. LLaVA-NeXT uses greedy decoding and scores exactly 0.0. Qwen2-VL uses top-k sampling by default, so its accuracy is slightly above zero (6.11%)."}},
+        {"@type": "Question", "name": "What is the computational overhead of SCI?", "acceptedAnswer": {"@type": "Answer", "text": "With batch inference, SCI3, SCI5 and SCI7 take about 1.29×, 1.81× and 2.48× the inference time of the base model (measured on MMStar with Qwen2-VL on one NVIDIA A800 GPU). Running the rounds sequentially costs 2.96×, 5.01× and 6.68×. The paper suggests KV-cache sharing of unchanged visual or textual tokens as a further acceleration."}},
+        {"@type": "Question", "name": "How is SCI different from other test-time scaling methods?", "acceptedAnswer": {"@type": "Answer", "text": "Most test-time scaling work increases the length of intermediate thinking tokens within a single inference. SCI instead scales the number of counterfactual inference rounds and reasons over continuous logit distributions by comparison and aggregation, which carries richer information than the final predicted tokens."}},
+        {"@type": "Question", "name": "Do SCI's gains come from overfitting to its own DRBench?", "acceptedAnswer": {"@type": "Answer", "text": "The paper tests this with cross-model evaluation. On the BS Subset constructed by LLaVA-NeXT, Qwen2-VL improves from 60.31% to 62.78% with SCI5; on the BS Subset constructed by Qwen2-VL, LLaVA-NeXT improves from 32.86% to 36.56%. The relative gains are smaller but consistent, which indicates generalization beyond the model-specific DRBench."}}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <a class="mark" href="#top">S<i>C</i>I</a>
+    <a class="item" href="#abstract">Abstract</a>
+    <a class="item" href="#method">Method</a>
+    <a class="item" href="#scaling">Scaling</a>
+    <a class="item" href="#drbench">DRBench</a>
+    <a class="item" href="#results">Results</a>
+    <a class="item" href="#faq">FAQ</a>
+    <a class="item" href="#code">Code</a>
+    <a class="item" href="#cite">Cite</a>
+    <span class="sp"></span>
+    <a class="item" href="zh/" hreflang="zh-CN" lang="zh-CN">中文</a>
+  </div>
+</nav>
+
+<main id="top">
+<header class="hero wrap">
+  <div class="venue rise">CVPR 2026 · arXiv 2603.07659</div>
+  <h1 class="rise d1">Scaling Test-Time Robustness of Vision-Language Models via <em>Self-Critical Inference</em> Framework</h1>
+  <p class="authors rise d2">
+    <span><a href="https://kaihuatang.github.io/">Kaihua Tang</a><sup>1</sup>,</span>
+    <span>Jiaxin Qi<sup>2</sup>,</span>
+    <span>Jinli Ou<sup>3</sup>,</span>
+    <span>Yuhua Zheng<sup>4</sup>,</span>
+    <span>Jianqiang Huang<sup>2,3,4,*</sup></span>
+  </p>
+  <p class="affil rise d2">
+    <sup>1</sup>Tongji University &nbsp;
+    <sup>2</sup>Computer Network Information Center, Chinese Academy of Sciences &nbsp;
+    <sup>3</sup>University of Chinese Academy of Sciences &nbsp;
+    <sup>4</sup>HIAS, University of Chinese Academy of Sciences &nbsp;
+    <sup>*</sup>Corresponding author
+  </p>
+  <div class="cta rise d3">
+    <a class="btn primary" href="https://arxiv.org/abs/2603.07659">Paper · arXiv</a>
+    <a class="btn" href="https://arxiv.org/pdf/2603.07659">PDF</a>
+    <a class="btn" href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework">Code · GitHub</a>
+    <a class="btn" href="https://github.com/KaihuaTang/Custom-Dataset-for-VLMEvalKit">ViLP.tsv for VLMEvalKit</a>
+    <a class="btn" href="#cite">BibTeX</a>
+  </div>
+
+  <div class="lede rise d4">
+    <div>
+      <h2>What is SCI?</h2>
+      <p><strong>Self-Critical Inference (SCI)</strong> is a decoding-time framework for large vision-language models (LVLMs). It re-asks the same question under perturbed prompts and perturbed images, then compares and aggregates the next-token <em>logits</em> of all rounds. One formulation mitigates both <strong>language bias</strong> (including object hallucination) and <strong>language sensitivity</strong>, and robustness keeps improving as more counterfactual rounds are added.</p>
+    </div>
+    <div>
+      <h2>What is DRBench?</h2>
+      <p>The <strong>Dynamic Robustness Benchmark (DRBench)</strong> is a model-specific benchmark. Given any LVLM and any existing dataset, it automatically extracts the samples on which <em>that</em> model is biased or prompt-sensitive, because the failure cases of LVLMs differ significantly across models and a fixed robustness benchmark cannot capture them.</p>
+    </div>
+  </div>
+</header>
+
+<!-- ============ ABSTRACT ============ -->
+<section id="abstract" class="wrap">
+  <div class="sec-head"><span class="no">§ 01</span><h2 class="title">Abstract</h2></div>
+  <div class="prose">
+    <p>The emergence of Large Language Models (LLMs) has driven rapid progress in multi-modal learning, particularly in the development of Large Vision-Language Models (LVLMs). However, existing LVLM training paradigms place excessive reliance on the LLM component, giving rise to two critical robustness challenges: language bias and language sensitivity. To address both issues simultaneously, we propose a novel Self-Critical Inference (SCI) framework that extends Visual Contrastive Decoding by conducting multi-round counterfactual reasoning through both textual and visual perturbations. This process further introduces a new strategy for improving robustness by scaling the number of counterfactual rounds. Moreover, we also observe that failure cases of LVLMs differ significantly across models, indicating that fixed robustness benchmarks may not be able to capture the true reliability of LVLMs. To this end, we propose the Dynamic Robustness Benchmark (DRBench), a model-specific evaluation framework targeting both language bias and sensitivity issues. Extensive experiments show that SCI consistently outperforms baseline methods on DRBench, and that increasing the number of inference rounds further boosts robustness beyond existing single-step counterfactual reasoning methods.</p>
+  </div>
+
+  <h3>Two robustness problems inherited from the LLM</h3>
+  <div class="two">
+    <div class="card">
+      <h4>Language <i>bias</i></h4>
+      <p>The model answers from language priors and disregards the visual input. It is a long-standing problem of VQA models, it persists in LVLMs, and it can lead to generating non-existent content, known as object hallucination.</p>
+    </div>
+    <div class="card">
+      <h4>Language <i>sensitivity</i></h4>
+      <p>The model changes its answer when the prompt is reworded without changing the question, for example when it is simply asked to check image details. This undermines consistency and reliability from the user's perspective, and it is newly introduced by the LLM component.</p>
+    </div>
+  </div>
+
+  <h3>Contributions</h3>
+  <div class="prose">
+    <ul>
+      <li><strong>SCI</strong>, a counterfactual inference framework that simultaneously mitigates language bias and enforces language consistency.</li>
+      <li><strong>DRBench</strong>, a model-specific and dynamic benchmark that assesses LVLM robustness on samples from real downstream tasks.</li>
+      <li>SCI consistently improves performance on both DRBench and standard datasets, and the paper reveals a previously underexplored way to improve robustness: increasing the number of test-time counterfactual inference rounds.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ METHOD ============ -->
+<section id="method" class="wrap">
+  <div class="sec-head"><span class="no">§ 02</span><h2 class="title">Method: from contrastive decoding to self-critical inference</h2></div>
+
+  <h3>VCD is TIE with a temperature</h3>
+  <div class="prose">
+    <p>Visual Contrastive Decoding (VCD) runs a second inference with a noisy image <i>v*</i> and decodes from the contrasted logits (1+α)·Z(v,q) − α·Z(v*,q). Expanding the softmax in the exp(·) domain shows what this really does:</p>
+  </div>
+  <div class="eq"><span class="lbl">Eq. 4</span>
+    <i>p</i>(<i>y</i> | <i>v</i>, <i>v</i>*, <i>q</i>) &nbsp;∝&nbsp; exp(<i>Z</i>(<i>v</i>,<i>q</i>)) · exp(TIE / <i>τ</i>), &nbsp;&nbsp; TIE = <i>Z</i>(<i>v</i>,<i>q</i>) − <i>Z</i>(<i>v</i>*,<i>q</i>), &nbsp; <i>τ</i> = 1/<i>α</i>
+  </div>
+  <div class="prose">
+    <p>VCD reweights the original token probability with the <strong>Total Indirect Effect (TIE)</strong> logits introduced by Counterfactual VQA (CF-VQA) and Unbiased Scene Graph Generation, which forces the model to rely on the visual difference. The extra parameter α of VCD is a temperature, τ = 1/α. Object hallucination is therefore treated as iterative biased token generation, and an LVLM is fundamentally no different from a conventional VQA classifier at every decoding step.</p>
+  </div>
+
+  <h3>The SCI formulation</h3>
+  <div class="prose">
+    <p>VCD only handles the visual side. SCI adds a Textual Counterfactual (TC) component that makes the logits prompt-consistent, and strengthens the Visual Counterfactual (VC) component with several counterfactual images:</p>
+  </div>
+  <div class="eq"><span class="lbl">Eq. 5</span>
+    <i>p</i><sub>SCI</sub>(<i>y</i> | <b><i>v</i></b>, <b><i>q</i></b>) &nbsp;∝&nbsp; <span class="tc">exp(TC / <i>τ</i><sub>1</sub>)</span> · <span class="vc">exp(VC / <i>τ</i><sub>2</sub>)</span>
+  </div>
+  <div class="eq"><span class="lbl">Eq. 6–7</span>
+    <span class="tc">TC<sub><i>k</i></sub> = max<sub><i>i</i></sub> <i>Z</i><sub><i>k</i></sub>(<i>v</i><sup>0</sup>, <i>q</i><sup><i>i</i></sup>)</span>, <i>i</i> = 0…<i>N</i> &nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="vc">VC = <i>Z</i>(<i>v</i><sup>0</sup>, <i>q</i><sup>0</sup>) − 𝔼<sub><i>j</i></sub>[<i>Z</i>(<i>v</i><sup><i>j</i></sup>, <i>q</i><sup>0</sup>)]</span>, <i>j</i> = 1…<i>M</i>
+  </div>
+  <div class="prose">
+    <ul>
+      <li><i>v</i><sup>0</sup> and <i>q</i><sup>0</sup> are the original image and prompt. <i>q</i><sup><i>i</i></sup> are semantically equivalent but lexically different prompts. <i>v</i><sup><i>j</i></sup> are content-removed images.</li>
+      <li>TC takes the element-wise maximum over the <i>N</i>+1 prompt variants on every vocabulary dimension. VC averages over <i>M</i> counterfactual images to obtain a more stable estimate than a single TIE.</li>
+      <li>Following VCD, an Adaptive Plausibility Constraint masks low-confidence tokens before decoding. SCI uses the temperature-scaled TC logits as the masking criterion, because TC provides more consistent predictions than the original logits.</li>
+      <li><strong>Special cases.</strong> VCD is SCI with <i>N</i>=0 and <i>M</i>=1. CF-VQA is SCI with a constant TC term and <i>M</i>=1.</li>
+      <li><strong>SCI3, SCI5, SCI7</strong> denote <i>M</i>+<i>N</i>+1 = 3, 5, 7 total inference rounds, that is <i>M</i>=<i>N</i>=1, 2, 3.</li>
+    </ul>
+  </div>
+
+  <h3>One SCI5 decoding step <small>5 forward passes → 1 token distribution</small></h3>
+  <div class="rounds" role="img" aria-label="Diagram of SCI5: the original input, two textual counterfactual prompts and two visual counterfactual images produce five sets of logits. TC is the element-wise maximum over the original and textual counterfactual logits. VC is the original logits minus the mean of the visual counterfactual logits. The final distribution is proportional to exp(TC/tau1) times exp(VC/tau2).">
+    <div class="col">
+      <div class="pass orig"><div class="thumb img"></div><div><b>ORIGINAL · v0, q0</b><span>the image and the prompt as given</span></div></div>
+      <div class="pass t"><div class="thumb txt">q1</div><div><b>TC-V1</b><span>“Think about the question based on details in the given image.” + original instruction</span></div></div>
+      <div class="pass t"><div class="thumb txt">q2</div><div><b>TC-V2</b><span lang="zh-CN">“请仔细观察图像中的信息，然后结合问题与选项…” (instruction language switched)</span></div></div>
+      <div class="pass v"><div class="thumb black"></div><div><b>VC-COLOR0 · v1</b><span>all pixels set to RGB (0, 0, 0)</span></div></div>
+      <div class="pass v"><div class="thumb noise"></div><div><b>VC-NOISE500 · v2</b><span>diffusion forward noise, 500 steps</span></div></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="col">
+      <div class="agg t"><b>Textual counterfactual</b><span class="f">TC = max(<i>Z</i><sub>0</sub>, <i>Z</i><sub>q1</sub>, <i>Z</i><sub>q2</sub>)</span><p>element-wise maximum over prompt variants: prompt-consistent logits</p></div>
+      <div class="agg v"><b>Visual counterfactual</b><span class="f">VC = <i>Z</i><sub>0</sub> − mean(<i>Z</i><sub>v1</sub>, <i>Z</i><sub>v2</sub>)</span><p>what the real image adds over content-removed images: removes language priors</p></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="col">
+      <div class="out"><b>Next token</b><span class="f">TC / <i>τ</i><sub>1</sub> + VC / <i>τ</i><sub>2</sub></span><p><i>τ</i><sub>1</sub> = 2.0, <i>τ</i><sub>2</sub> = 0.2 for SCI5. Tokens with a low TC logit are masked by the adaptive plausibility constraint (β = 0.3), then decoding proceeds as usual.</p></div>
+    </div>
+  </div>
+  <p class="cap">SCI7 adds TC-V3 (an identity prompt: “You are a smart student who is good at answering multiple-choice questions.”) and VC-Noise400. SCI3 keeps only TC-V1 and VC-Color0. Prompt texts are quoted from the released code.</p>
+
+  <div class="tbl">
+    <table>
+      <caption><b>Hyperparameters.</b> Selected on the validation split of the Qwen2-VL BS Subset and applied to LLaVA-NeXT unchanged.</caption>
+      <thead><tr><th>Paper notation</th><th class="l">Meaning</th><th>Code argument</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td><i>τ</i><sub>1</sub></td><td class="l">temperature of TC; grows by 0.5 per added prompt variant because the element-wise maximum increases the logit magnitude</td><td><code>gamma</code></td><td>1.5 / 2.0 / 2.5 (SCI3 / 5 / 7)</td></tr>
+        <tr><td><i>τ</i><sub>2</sub></td><td class="l">temperature of VC; fixed because averaging stabilizes the distribution</td><td><code>beta</code></td><td>0.2</td></tr>
+        <tr><td>β</td><td class="l">adaptive plausibility constraint threshold</td><td><code>theta</code></td><td>0.3 on DRBench, 0.8 on original datasets</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ SCALING ============ -->
+<section id="scaling" class="wrap">
+  <div class="sec-head"><span class="no">§ 03</span><h2 class="title">More counterfactual rounds, more robustness</h2></div>
+  <div class="prose">
+    <p>Existing test-time scaling increases the length of intermediate thinking tokens within a single inference. SCI scales a different axis: the number of counterfactual inference rounds whose logits are aggregated. Overall accuracy on all three DRBench subsets rises from the base model (1 round) to SCI3, SCI5 and SCI7.</p>
+  </div>
+
+  <div class="legend" aria-hidden="true">
+    <span><i style="border-color:var(--s1)"></i>Bias Subset</span>
+    <span><i style="border-color:var(--s2)"></i>Sensitivity Subset</span>
+    <span><i style="border-color:var(--s3)"></i>BS Subset (union)</span>
+  </div>
+  <div class="charts">
+    <figure class="chart" style="margin:0">
+      <h4>Qwen2-VL-7B</h4>
+      <p class="sub">Overall top-1 accuracy (%) on its own DRBench</p>
+      <svg viewBox="0 0 470 300" role="img" aria-label="qwen overall accuracy versus number of SCI inference rounds" data-chart='{"x": ["1 · base", "3 · SCI3", "5 · SCI5", "7 · SCI7"], "series": [{"name": "Bias", "color": "var(--s1)", "v": [6.11, 22.74, 25.09, 27.65]}, {"name": "Sensitivity", "color": "var(--s2)", "v": [36.06, 43.16, 44.58, 46.54]}, {"name": "BS", "color": "var(--s3)", "v": [14.52, 26.94, 29.5, 31.72]}]}'><line class="grid" x1="36" x2="352" y1="248.0" y2="248.0"/><text x="28" y="252.0" text-anchor="end">0</text><line class="grid" x1="36" x2="352" y1="201.6" y2="201.6"/><text x="28" y="205.6" text-anchor="end">10</text><line class="grid" x1="36" x2="352" y1="155.2" y2="155.2"/><text x="28" y="159.2" text-anchor="end">20</text><line class="grid" x1="36" x2="352" y1="108.8" y2="108.8"/><text x="28" y="112.8" text-anchor="end">30</text><line class="grid" x1="36" x2="352" y1="62.4" y2="62.4"/><text x="28" y="66.4" text-anchor="end">40</text><line class="grid" x1="36" x2="352" y1="16.0" y2="16.0"/><text x="28" y="20.0" text-anchor="end">50</text><text x="58.0" y="268" text-anchor="middle">1 · base</text><text x="152.0" y="268" text-anchor="middle">3 · SCI3</text><text x="246.0" y="268" text-anchor="middle">5 · SCI5</text><text x="340.0" y="268" text-anchor="middle">7 · SCI7</text><text x="194.0" y="290" text-anchor="middle">Number of inference rounds</text><line class="cross" x1="0" x2="0" y1="16" y2="248"/><polyline class="line" stroke="var(--s1)" points="58.0,219.6 152.0,142.5 246.0,131.6 340.0,119.7"/><polyline class="line" stroke="var(--s2)" points="58.0,80.7 152.0,47.7 246.0,41.1 340.0,32.1"/><polyline class="line" stroke="var(--s3)" points="58.0,180.6 152.0,123.0 246.0,111.1 340.0,100.8"/><circle class="dot" cx="58.0" cy="219.6" r="5" fill="var(--s1)"/><circle class="dot" cx="152.0" cy="142.5" r="5" fill="var(--s1)"/><circle class="dot" cx="246.0" cy="131.6" r="5" fill="var(--s1)"/><circle class="dot" cx="340.0" cy="119.7" r="5" fill="var(--s1)"/><text class="v" x="58.0" y="209.6" text-anchor="middle">6.11</text><text class="name" x="352.0" y="123.7">Bias <tspan class="v">27.65</tspan></text><circle class="dot" cx="58.0" cy="80.7" r="5" fill="var(--s2)"/><circle class="dot" cx="152.0" cy="47.7" r="5" fill="var(--s2)"/><circle class="dot" cx="246.0" cy="41.1" r="5" fill="var(--s2)"/><circle class="dot" cx="340.0" cy="32.1" r="5" fill="var(--s2)"/><text class="v" x="58.0" y="70.7" text-anchor="middle">36.06</text><text class="name" x="352.0" y="36.1">Sensitivity <tspan class="v">46.54</tspan></text><circle class="dot" cx="58.0" cy="180.6" r="5" fill="var(--s3)"/><circle class="dot" cx="152.0" cy="123.0" r="5" fill="var(--s3)"/><circle class="dot" cx="246.0" cy="111.1" r="5" fill="var(--s3)"/><circle class="dot" cx="340.0" cy="100.8" r="5" fill="var(--s3)"/><text class="v" x="58.0" y="170.6" text-anchor="middle">14.52</text><text class="name" x="352.0" y="104.8">BS <tspan class="v">31.72</tspan></text><rect class="hit" data-i="0" x="11.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="1" x="105.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="2" x="199.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="3" x="293.0" y="16" width="94.0" height="232" fill="transparent"/></svg>
+      <div class="tip"></div>
+    </figure>
+    <figure class="chart" style="margin:0">
+      <h4>LLaVA-NeXT-8B</h4>
+      <p class="sub">Overall top-1 accuracy (%) on its own DRBench</p>
+      <svg viewBox="0 0 470 300" role="img" aria-label="llava overall accuracy versus number of SCI inference rounds" data-chart='{"x": ["1 · base", "3 · SCI3", "5 · SCI5", "7 · SCI7"], "series": [{"name": "Bias", "color": "var(--s1)", "v": [0.0, 23.48, 26.08, 27.01]}, {"name": "Sensitivity", "color": "var(--s2)", "v": [38.63, 47.2, 47.95, 47.64]}, {"name": "BS", "color": "var(--s3)", "v": [18.75, 32.72, 34.19, 34.92]}]}'><line class="grid" x1="36" x2="352" y1="248.0" y2="248.0"/><text x="28" y="252.0" text-anchor="end">0</text><line class="grid" x1="36" x2="352" y1="201.6" y2="201.6"/><text x="28" y="205.6" text-anchor="end">10</text><line class="grid" x1="36" x2="352" y1="155.2" y2="155.2"/><text x="28" y="159.2" text-anchor="end">20</text><line class="grid" x1="36" x2="352" y1="108.8" y2="108.8"/><text x="28" y="112.8" text-anchor="end">30</text><line class="grid" x1="36" x2="352" y1="62.4" y2="62.4"/><text x="28" y="66.4" text-anchor="end">40</text><line class="grid" x1="36" x2="352" y1="16.0" y2="16.0"/><text x="28" y="20.0" text-anchor="end">50</text><text x="58.0" y="268" text-anchor="middle">1 · base</text><text x="152.0" y="268" text-anchor="middle">3 · SCI3</text><text x="246.0" y="268" text-anchor="middle">5 · SCI5</text><text x="340.0" y="268" text-anchor="middle">7 · SCI7</text><text x="194.0" y="290" text-anchor="middle">Number of inference rounds</text><line class="cross" x1="0" x2="0" y1="16" y2="248"/><polyline class="line" stroke="var(--s1)" points="58.0,248.0 152.0,139.1 246.0,127.0 340.0,122.7"/><polyline class="line" stroke="var(--s2)" points="58.0,68.8 152.0,29.0 246.0,25.5 340.0,27.0"/><polyline class="line" stroke="var(--s3)" points="58.0,161.0 152.0,96.2 246.0,89.4 340.0,86.0"/><circle class="dot" cx="58.0" cy="248.0" r="5" fill="var(--s1)"/><circle class="dot" cx="152.0" cy="139.1" r="5" fill="var(--s1)"/><circle class="dot" cx="246.0" cy="127.0" r="5" fill="var(--s1)"/><circle class="dot" cx="340.0" cy="122.7" r="5" fill="var(--s1)"/><text class="v" x="58.0" y="238.0" text-anchor="middle">0.0</text><text class="name" x="352.0" y="126.7">Bias <tspan class="v">27.01</tspan></text><circle class="dot" cx="58.0" cy="68.8" r="5" fill="var(--s2)"/><circle class="dot" cx="152.0" cy="29.0" r="5" fill="var(--s2)"/><circle class="dot" cx="246.0" cy="25.5" r="5" fill="var(--s2)"/><circle class="dot" cx="340.0" cy="27.0" r="5" fill="var(--s2)"/><text class="v" x="58.0" y="58.8" text-anchor="middle">38.63</text><text class="name" x="352.0" y="31.0">Sensitivity <tspan class="v">47.64</tspan></text><circle class="dot" cx="58.0" cy="161.0" r="5" fill="var(--s3)"/><circle class="dot" cx="152.0" cy="96.2" r="5" fill="var(--s3)"/><circle class="dot" cx="246.0" cy="89.4" r="5" fill="var(--s3)"/><circle class="dot" cx="340.0" cy="86.0" r="5" fill="var(--s3)"/><text class="v" x="58.0" y="151.0" text-anchor="middle">18.75</text><text class="name" x="352.0" y="90.0">BS <tspan class="v">34.92</tspan></text><rect class="hit" data-i="0" x="11.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="1" x="105.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="2" x="199.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="3" x="293.0" y="16" width="94.0" height="232" fill="transparent"/></svg>
+      <div class="tip"></div>
+    </figure>
+  </div>
+  <p class="cap">Data: Overall columns of Table 2 in the paper (80% test split). The full table with MCQ / Others breakdown is in <a href="#results">Results</a>.</p>
+
+  <h3>What the extra rounds cost</h3>
+  <div class="stats">
+    <div class="stat"><div class="n">1.29<small>×</small></div><p>SCI3 inference time relative to the base model, with batch inference</p></div>
+    <div class="stat"><div class="n">1.81<small>×</small></div><p>SCI5, with batch inference</p></div>
+    <div class="stat"><div class="n">2.48<small>×</small></div><p>SCI7, with batch inference</p></div>
+    <div class="stat"><div class="n"><em>6.68</em><small>×</small></div><p>SCI7 when the rounds run sequentially (2.96× for SCI3, 5.01× for SCI5)</p></div>
+  </div>
+  <div class="tbl">
+    <table>
+      <caption><b>Table 7.</b> Average inference time per sample on MMStar, Qwen2-VL, one NVIDIA A800 GPU.</caption>
+      <thead><tr><th></th><th>Qwen2-VL</th><th>SCI3</th><th>SCI5</th><th>SCI7</th></tr></thead>
+      <tbody>
+        <tr><td>Sequential rounds</td><td>540.47 ms</td><td>1599.65 ms</td><td>2707.16 ms</td><td>3611.18 ms</td></tr>
+        <tr><td>Batch inference</td><td>540.47 ms</td><td>697.24 ms</td><td>978.14 ms</td><td>1342.86 ms</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap">All counterfactual rounds are independent forward passes, so they fit in one batch. The paper also points to KV-cache sharing of the unchanged visual or textual tokens as a future acceleration.</p>
+</section>
+
+<!-- ============ DRBENCH ============ -->
+<section id="drbench" class="wrap">
+  <div class="sec-head"><span class="no">§ 04</span><h2 class="title">DRBench: a robustness benchmark that follows the model</h2></div>
+  <div class="prose">
+    <p>Fixed robustness datasets are costly to build, can leak into the web-crawled training data of later models, and often use a single question type such as exist-or-not questions. More importantly, non-robust samples are not fixed: <strong>24.68%</strong> of the test samples are hard for LLaVA-NeXT, yet only <strong>7.34%</strong> are shared with Qwen2-VL. DRBench therefore builds the benchmark <em>per model</em>, in two steps.</p>
+    <ul>
+      <li><strong>Evaluate.</strong> Run the model on an existing dataset with the original input, two visual counterfactual inputs and two textual counterfactual inputs (<i>M</i>=<i>N</i>=2).</li>
+      <li><strong>Filter.</strong> The <strong>Bias Subset</strong> collects samples that yield the same incorrect prediction under both the original and the dummy visual inputs, which indicates reliance on spurious language priors. The <strong>Sensitivity Subset</strong> collects samples whose prediction changes in response to subtle, non-causal prompt variations. The <strong>BS Subset</strong> is their union.</li>
+    </ul>
+    <p>The paper constructs DRBench from six widely used benchmarks: MME, MMStar, CCBench, ViLP, MMBench-DEV-EN-V11 and MMBench-DEV-CN-V11, randomly split into 20% validation (3,315 samples) and 80% test (13,251 samples: 10,632 multiple-choice and 2,619 others). Results are reported for MCQ (multiple-choice questions) and Others (Yes/No for MME, open-ended QA for ViLP).</p>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <caption><b>Table 1.</b> Size of each DRBench subset on the test split. Qwen2-VL is generally more robust than LLaVA-NeXT, Qwen2-VL is more vulnerable to bias than to sensitivity, and LLaVA-NeXT shows more sensitivity issues.</caption>
+      <thead><tr><th>Construction model</th><th>B Subset</th><th>S Subset</th><th>BS Subset</th><th>Overlap</th></tr></thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT (MCQ)</td><td>1810</td><td>1005</td><td>2476</td><td>339</td></tr>
+        <tr><td>LLaVA-NeXT (Others)</td><td>345</td><td>582</td><td>794</td><td>133</td></tr>
+        <tr><td>LLaVA-NeXT (Overall)</td><td>2155</td><td>1587</td><td>3270</td><td>472</td></tr>
+        <tr class="sep"><td>Qwen2-VL (MCQ)</td><td>1080</td><td>252</td><td>1243</td><td>89</td></tr>
+        <tr><td>Qwen2-VL (Others)</td><td>327</td><td>311</td><td>513</td><td>125</td></tr>
+        <tr><td>Qwen2-VL (Overall)</td><td>1407</td><td>563</td><td>1756</td><td>214</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <caption><b>Table 3.</b> Cross-model evaluation on the BS Subset (top-1 accuracy, %). A model that fails on its own subset does well on the other model's subset, and SCI5 still helps on a subset built by a different model.</caption>
+      <thead><tr><th>BS Subset built by</th><th>Evaluated method</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT</td><td>LLaVA-NeXT-Original</td><td>15.91</td><td>27.58</td><td>18.75</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT</td><td>LLaVA-NeXT-SCI5</td><td>28.80</td><td>51.01</td><td>34.19</td></tr>
+        <tr><td>LLaVA-NeXT</td><td>Qwen2-VL-Original</td><td>59.29</td><td>63.48</td><td>60.31</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT</td><td>Qwen2-VL-SCI5</td><td>61.15</td><td>67.88</td><td>62.78</td></tr>
+        <tr class="sep"><td>Qwen2-VL</td><td>Qwen2-VL-Original</td><td>10.78</td><td>23.59</td><td>14.52</td></tr>
+        <tr class="ours"><td>Qwen2-VL</td><td>Qwen2-VL-SCI5</td><td>28.00</td><td>33.14</td><td>29.50</td></tr>
+        <tr><td>Qwen2-VL</td><td>LLaVA-NeXT-Original</td><td>30.25</td><td>39.18</td><td>32.86</td></tr>
+        <tr class="ours"><td>Qwen2-VL</td><td>LLaVA-NeXT-SCI5</td><td>34.59</td><td>41.33</td><td>36.56</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section id="results" class="wrap">
+  <div class="sec-head"><span class="no">§ 05</span><h2 class="title">Results</h2></div>
+  <div class="prose">
+    <p>Base models: the Hugging Face versions of Qwen2-VL-7B-Instruct (bfloat16, default top-k sampling) and Llama3-LLaVA-NeXT-8B (float16, greedy decoding). Baselines: TIE adapted from CF-VQA, VCD, and M3ID, all with the adaptive plausibility constraint. All experiments use VLMEvalKit on a single NVIDIA A800 80GB GPU. The metric is top-1 accuracy (%).</p>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <caption><b>Table 2.</b> DRBench, 80% test split. B = Bias Subset, S = Sensitivity Subset, BS = union. Bold marks the best result per column and model.</caption>
+      <thead>
+        <tr class="grp"><th></th><th colspan="3">B Subset</th><th colspan="3">S Subset</th><th colspan="3">BS Subset</th></tr>
+        <tr><th>Method</th><th>MCQ</th><th>Others</th><th>Overall</th><th>MCQ</th><th>Others</th><th>Overall</th><th>MCQ</th><th>Others</th><th>Overall</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT</td><td>0.0</td><td>0.0</td><td>0.0</td><td>39.2</td><td>37.63</td><td>38.63</td><td>15.91</td><td>27.58</td><td>18.75</td></tr>
+        <tr><td>LLaVA-NeXT-TIE</td><td>12.98</td><td>23.48</td><td>14.66</td><td>39.00</td><td>57.56</td><td>45.81</td><td>21.89</td><td>44.21</td><td>27.31</td></tr>
+        <tr><td>LLaVA-NeXT-VCD</td><td>12.65</td><td>25.51</td><td>14.71</td><td>40.50</td><td>56.53</td><td>46.38</td><td>22.54</td><td>44.58</td><td>27.89</td></tr>
+        <tr><td>LLaVA-NeXT-M3ID</td><td>16.91</td><td>25.22</td><td>18.24</td><td>39.90</td><td>56.36</td><td>45.94</td><td>24.15</td><td>44.33</td><td>29.05</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI3 (ours)</td><td>21.22</td><td>35.36</td><td>23.48</td><td>39.60</td><td>60.31</td><td>47.20</td><td>27.14</td><td>50.13</td><td>32.72</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI5 (ours)</td><td>23.81</td><td>37.97</td><td>26.08</td><td class="best">40.60</td><td class="best">60.65</td><td class="best">47.95</td><td>28.80</td><td>51.01</td><td>34.19</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI7 (ours)</td><td class="best">24.86</td><td class="best">38.26</td><td class="best">27.01</td><td>40.10</td><td class="best">60.65</td><td>47.64</td><td class="best">29.68</td><td class="best">51.26</td><td class="best">34.92</td></tr>
+        <tr class="sep"><td>Qwen2-VL</td><td>5.37</td><td>8.56</td><td>6.11</td><td>38.10</td><td>34.41</td><td>36.06</td><td>10.78</td><td>23.59</td><td>14.52</td></tr>
+        <tr><td>Qwen2-VL-TIE</td><td>16.20</td><td>16.82</td><td>16.35</td><td>45.63</td><td>36.66</td><td>40.67</td><td>20.27</td><td>27.29</td><td>22.32</td></tr>
+        <tr><td>Qwen2-VL-VCD</td><td>15.74</td><td>21.71</td><td>17.13</td><td>46.83</td><td>40.84</td><td>43.52</td><td>20.11</td><td>30.41</td><td>23.12</td></tr>
+        <tr><td>Qwen2-VL-M3ID</td><td>19.81</td><td>21.71</td><td>20.26</td><td class="best">47.22</td><td>41.16</td><td>43.87</td><td>23.65</td><td>30.6</td><td>25.68</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI3 (ours)</td><td>21.67</td><td>26.30</td><td>22.74</td><td>44.05</td><td>42.44</td><td>43.16</td><td>24.54</td><td>32.75</td><td>26.94</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI5 (ours)</td><td>24.91</td><td>25.69</td><td>25.09</td><td class="best">47.22</td><td>42.44</td><td>44.58</td><td>28.00</td><td>33.14</td><td>29.50</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI7 (ours)</td><td class="best">27.04</td><td class="best">29.66</td><td class="best">27.65</td><td class="best">47.22</td><td class="best">45.98</td><td class="best">46.54</td><td class="best">29.61</td><td class="best">36.84</td><td class="best">31.72</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <caption><b>Table 4.</b> The six original datasets, 80% test splits. MMB-C / MMB-E = MMBench-DEV-CN-V11 / EN-V11, CCB = CCBench, MMS = MMStar; MME scores are converted to accuracy. Vulnerable samples are only a portion of these datasets, so the margins are small, but SCI5 improves both question types while TIE, VCD and M3ID lower the accuracy on Others.</caption>
+      <thead><tr><th>Method</th><th>MMB-C</th><th>MMB-E</th><th>MME</th><th>CCB</th><th>MMS</th><th>ViLP</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT</td><td>78.0</td><td>79.72</td><td>79.57</td><td>47.0</td><td>44.75</td><td>51.53</td><td>70.12</td><td>71.86</td><td>70.46</td></tr>
+        <tr><td>LLaVA-NeXT-TIE</td><td>78.28</td><td>80.28</td><td>77.30</td><td>45.65</td><td>46.00</td><td>53.19</td><td>70.36</td><td>70.68</td><td>70.42</td></tr>
+        <tr><td>LLaVA-NeXT-VCD</td><td>78.38</td><td>80.28</td><td>78.09</td><td>46.63</td><td>45.00</td><td>54.31</td><td>70.44</td><td>71.55</td><td>70.66</td></tr>
+        <tr><td>LLaVA-NeXT-M3ID</td><td>78.31</td><td>80.18</td><td>78.62</td><td>45.89</td><td>45.92</td><td>54.03</td><td>70.36</td><td>71.86</td><td>70.66</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI5 (ours)</td><td>78.21</td><td>80.08</td><td>80.15</td><td>46.20</td><td>45.75</td><td>53.06</td><td>70.32</td><td>72.70</td><td>70.79</td></tr>
+        <tr class="sep"><td>Qwen2-VL</td><td>85.26</td><td>86.36</td><td>87.89</td><td>73.22</td><td>59.50</td><td>56.53</td><td>80.91</td><td>79.27</td><td>80.58</td></tr>
+        <tr><td>Qwen2-VL-TIE</td><td>86.00</td><td>86.59</td><td>86.52</td><td>73.84</td><td>59.00</td><td>57.08</td><td>81.30</td><td>78.43</td><td>80.73</td></tr>
+        <tr><td>Qwen2-VL-VCD</td><td>86.05</td><td>86.56</td><td>86.41</td><td>73.77</td><td>60.08</td><td>57.92</td><td>81.42</td><td>78.58</td><td>80.86</td></tr>
+        <tr><td>Qwen2-VL-M3ID</td><td>85.69</td><td>86.46</td><td>86.10</td><td>73.96</td><td>59.75</td><td>57.78</td><td>81.25</td><td>78.31</td><td>80.67</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI5 (ours)</td><td>85.97</td><td>86.67</td><td>87.36</td><td>73.59</td><td>59.92</td><td>58.06</td><td>81.39</td><td>79.31</td><td>80.98</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <caption><b>Table 5.</b> Ablation of counterfactual logit combinations with Qwen2-VL on the BS Subset. A single counterfactual input alone does not help; the gain comes from comparing and aggregating logits, and it grows as rounds are added until the full SCI5.</caption>
+      <thead><tr><th>Base</th><th>VC-Color0</th><th>VC-Noise500</th><th>TC-V1</th><th>TC-V2</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
+      <tbody>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td>10.78</td><td>23.59</td><td>14.52</td></tr>
+        <tr><td class="c" style="text-align:center"></td><td class="c">✓</td><td class="c"></td><td class="c"></td><td class="c"></td><td>8.77</td><td>18.52</td><td>11.62</td></tr>
+        <tr><td class="c" style="text-align:center"></td><td class="c"></td><td class="c">✓</td><td class="c"></td><td class="c"></td><td>10.62</td><td>25.15</td><td>14.86</td></tr>
+        <tr><td class="c" style="text-align:center"></td><td class="c"></td><td class="c"></td><td class="c">✓</td><td class="c"></td><td>10.38</td><td>24.37</td><td>14.46</td></tr>
+        <tr><td class="c" style="text-align:center"></td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c">✓</td><td>12.07</td><td>23.00</td><td>15.26</td></tr>
+        <tr class="sep"><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c"></td><td class="c"></td><td class="c"></td><td>21.72</td><td>29.43</td><td>23.97</td></tr>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c"></td><td class="c"></td><td class="c">✓</td><td class="c"></td><td>10.54</td><td>23.39</td><td>14.29</td></tr>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c"></td><td class="c">✓</td><td class="c"></td><td>24.54</td><td>32.75</td><td>26.94</td></tr>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c"></td><td class="c">✓</td><td class="c"></td><td class="c">✓</td><td>26.67</td><td>30.97</td><td>27.93</td></tr>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c"></td><td class="c"></td><td>27.37</td><td>31.13</td><td>28.46</td></tr>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c"></td><td class="c"></td><td class="c">✓</td><td class="c">✓</td><td>11.58</td><td>23.21</td><td>14.98</td></tr>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c"></td><td class="c">✓</td><td class="c">✓</td><td>26.07</td><td>32.55</td><td>27.96</td></tr>
+        <tr><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c"></td><td>26.71</td><td>33.33</td><td>28.64</td></tr>
+        <tr class="ours"><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>28.00</td><td>33.14</td><td>29.50</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="wrap">
+  <div class="sec-head"><span class="no">§ 06</span><h2 class="title">Questions the paper answers</h2></div>
+  <div class="faq">
+    <details open>
+      <summary>Why do base models score close to 0 on the Bias Subset?</summary>
+      <p>DRBench intentionally probes the samples that are most vulnerable, so they are hard examples and accuracy can even fall below the 25% random-guess rate of multiple-choice questions. By definition the Bias Subset collects samples on which the base model consistently predicts incorrectly, so its expected accuracy is 0.0. LLaVA-NeXT uses greedy decoding and is deterministic, which gives exactly 0.0. Qwen2-VL uses top-k sampling by default, which is why it reaches 6.11% rather than zero.</p>
+    </details>
+    <details>
+      <summary>What is the computational overhead, and can it be reduced?</summary>
+      <p>Every test-time scaling strategy trades inference time for performance. The counterfactual rounds of SCI are independent, so batch inference is the most direct acceleration: SCI3, SCI5 and SCI7 cost about 1.29×, 1.81× and 2.48× the base model, compared with 2.96×, 5.01× and 6.68× when the rounds run sequentially. Sharing the KV cache of the visual or textual tokens that remain unchanged is a further option.</p>
+    </details>
+    <details>
+      <summary>How is SCI different from previous test-time scaling studies?</summary>
+      <p>Most test-time scaling work increases the length of intermediate thinking tokens, and such prompt-level improvement only reveals whether the final answer is right or wrong. SCI goes beyond discrete token outputs: it analyzes the underlying continuous logit distributions by comparing and aggregating counterfactual logits, which carries much richer information than the final predicted tokens.</p>
+    </details>
+    <details>
+      <summary>Do the gains of SCI come from hacking its own DRBench?</summary>
+      <p>DRBench construction and SCI share the same counterfactual inputs, so this is a fair concern. The cross-model evaluation in Table 3 addresses it: SCI still yields consistent improvements on the vulnerable sets derived from the <em>other</em> model (Qwen2-VL 60.31 → 62.78 on the LLaVA-NeXT subset, LLaVA-NeXT 32.86 → 36.56 on the Qwen2-VL subset), although the relative improvements are smaller. SCI also keeps or improves accuracy on the six original datasets.</p>
+    </details>
+    <details>
+      <summary>How does SCI relate to VCD, M3ID, TIE and CF-VQA?</summary>
+      <p>The paper shows that VCD reweights the original token probability by exp(TIE/τ) with τ = 1/α, so VCD is theoretically aligned with the TDE / TIE debiasing of Unbiased Scene Graph Generation and Counterfactual VQA. M3ID shares the same formulation except that its τ varies with the position of the predicted token. SCI generalizes them: VCD is the case <i>N</i>=0, <i>M</i>=1, and CF-VQA is the case of a constant TC term with <i>M</i>=1.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CODE ============ -->
+<section id="code" class="wrap">
+  <div class="sec-head"><span class="no">§ 07</span><h2 class="title">Code and reproduction</h2></div>
+  <div class="prose">
+    <p>The <a href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework">repository</a> is a modified copy of <a href="https://github.com/open-compass/VLMEvalKit/tree/v0.2">VLMEvalKit v0.2</a>. SCI, TIE, VCD and M3ID are implemented for Qwen2-VL and LLaVA-NeXT at the logit level inside the model's <code>forward</code>, and every variant is a registered model name in <code>vlmeval/config.py</code>, for example <code>Qwen2-VL-7B-SCI5-b02a1g2t03</code>.</p>
+  </div>
+  <ol class="steps">
+    <li><div><b>Run the base model and its counterfactual variants</b><span><code>bash step0_run_basemodel.sh</code> evaluates Original, VCF-Color0, VCF-Noise500, TCF-V1 and TCF-V2 on the six datasets.</span></div></li>
+    <li><div><b>Build the model-specific DRBench</b><span><code>bash step1_generate_data.sh</code> writes the Bias (<code>_VCF_</code>), Sensitivity (<code>_TCF_</code>) and BS (<code>_Biased_</code>) validation / test splits.</span></div></li>
+    <li><div><b>Re-run the base models on the subsets</b><span><code>bash step2_test_basemodel_a.sh</code> and <code>step2_test_basemodel_b.sh</code>, then score with <code>tools/evaluate_dataset.py</code>.</span></div></li>
+    <li><div><b>Select hyperparameters on the validation split</b><span><code>bash step3_validation_a.sh</code>, <code>step3_validation_b.sh</code>, then <code>tools/validation.py</code> searches <i>τ</i><sub>1</sub>, <i>τ</i><sub>2</sub> and β on dumped logits.</span></div></li>
+    <li><div><b>Run TIE, VCD, M3ID and SCI</b><span><code>bash step4_test_algorithm_a.sh</code> and <code>step4_test_algorithm_b.sh</code>.</span></div></li>
+  </ol>
+  <p class="cap">Full instructions, environment setup and the paper-to-code map are in the <a href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework#getting-started">README</a>. ViLP.tsv for VLMEvalKit: <a href="https://github.com/KaihuaTang/Custom-Dataset-for-VLMEvalKit">KaihuaTang/Custom-Dataset-for-VLMEvalKit</a>.</p>
+</section>
+
+<!-- ============ CITE ============ -->
+<section id="cite" class="wrap">
+  <div class="sec-head"><span class="no">§ 08</span><h2 class="title">Citation</h2></div>
+  <div class="prose"><p>If you find this project helps your research, please kindly consider citing our paper in your publications.</p></div>
+  <pre id="bib"><button class="copy" data-copy="bib">copy</button>@inproceedings{tang2026scaling,
+  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
+  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year={2026}
+}</pre>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Acknowledgements.</strong> This work was supported by the Double First-Class Initiative Fund, Disciplinary Development Program of the Institute of AI for Engineering, Tongji University. The code is built on VLMEvalKit, and the visual noise function follows the official VCD implementation.</p>
+    <p>Code released under the Apache-2.0 license. All numbers on this page are taken from the paper (arXiv:2603.07659v2). Machine-readable summary: <a href="llms.txt">llms.txt</a>. <a href="zh/" lang="zh-CN">中文版</a></p>
+  </div>
+</footer>
+
+<script src="main.js" defer></script>
+</body>
+</html>

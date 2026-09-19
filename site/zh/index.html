@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>自我批判推理框架 SCI 与动态鲁棒性基准 DRBench：扩展视觉语言模型的测试时鲁棒性 | CVPR 2026</title>
+<meta name="description" content="CVPR 2026 论文官方项目主页（中文）。自我批判推理（Self-Critical Inference, SCI）通过多轮文本与视觉反事实推理并在 logit 层面聚合，缓解多模态大模型的语言偏见、物体幻觉与提示词敏感性；DRBench 是针对具体模型的动态鲁棒性基准。">
+<meta name="keywords" content="自我批判推理, SCI, DRBench, 视觉语言模型, 多模态大模型, 鲁棒性, 语言偏见, 语言敏感性, 物体幻觉, 反事实推理, 视觉对比解码, 测试时扩展, CVPR 2026">
+<meta name="author" content="Kaihua Tang, Jiaxin Qi, Jinli Ou, Yuhua Zheng, Jianqiang Huang">
+<link rel="canonical" href="https://kaihuatang.github.io/Self-Critical-Inference-Framework/zh/">
+<link rel="alternate" hreflang="en" href="https://kaihuatang.github.io/Self-Critical-Inference-Framework/">
+<link rel="alternate" hreflang="zh-CN" href="https://kaihuatang.github.io/Self-Critical-Inference-Framework/zh/">
+
+<meta name="citation_title" content="Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework">
+<meta name="citation_author" content="Tang, Kaihua">
+<meta name="citation_author" content="Qi, Jiaxin">
+<meta name="citation_author" content="Ou, Jinli">
+<meta name="citation_author" content="Zheng, Yuhua">
+<meta name="citation_author" content="Huang, Jianqiang">
+<meta name="citation_publication_date" content="2026/03/08">
+<meta name="citation_conference_title" content="Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)">
+<meta name="citation_arxiv_id" content="2603.07659">
+<meta name="citation_pdf_url" content="https://arxiv.org/pdf/2603.07659">
+
+<meta property="og:type" content="article">
+<meta property="og:title" content="自我批判推理框架 SCI 与 DRBench | CVPR 2026">
+<meta property="og:description" content="通过增加反事实推理轮数来扩展视觉语言模型的测试时鲁棒性，并提出针对具体模型的动态鲁棒性基准。">
+<meta property="og:url" content="https://kaihuatang.github.io/Self-Critical-Inference-Framework/zh/">
+<meta property="og:image" content="https://kaihuatang.github.io/Self-Critical-Inference-Framework/assets/sci-scaling-qwen2vl.png">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2316130f'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-style='italic' font-size='44' text-anchor='middle' fill='%23ff6b4f'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  h1 { font-size: clamp(34px, 5vw, 60px); line-height: 1.15; max-width: 22em; }
+  h1 .en { display: block; font-size: 0.42em; line-height: 1.3; color: var(--ink-2); margin-top: 18px; max-width: 34em; letter-spacing: 0; }
+  h1 em, .card h4 i { font-style: normal; }
+  .faq summary { font-size: 21px; }
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="章节">
+  <div class="wrap">
+    <a class="mark" href="#top">S<i>C</i>I</a>
+    <a class="item" href="#abstract">摘要</a>
+    <a class="item" href="#method">方法</a>
+    <a class="item" href="#scaling">测试时扩展</a>
+    <a class="item" href="#drbench">DRBench</a>
+    <a class="item" href="#results">实验结果</a>
+    <a class="item" href="#faq">问答</a>
+    <a class="item" href="#code">代码</a>
+    <a class="item" href="#cite">引用</a>
+    <span class="sp"></span>
+    <a class="item" href="../" hreflang="en" lang="en">English</a>
+  </div>
+</nav>
+
+<main id="top">
+<header class="hero wrap">
+  <div class="venue rise">CVPR 2026 · arXiv 2603.07659</div>
+  <h1 class="rise d1">通过<em>自我批判推理</em>框架扩展视觉语言模型的测试时鲁棒性
+    <span class="en" lang="en">Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework</span></h1>
+  <p class="authors rise d2" lang="en">
+    <span><a href="https://kaihuatang.github.io/">Kaihua Tang</a><sup>1</sup>,</span>
+    <span>Jiaxin Qi<sup>2</sup>,</span>
+    <span>Jinli Ou<sup>3</sup>,</span>
+    <span>Yuhua Zheng<sup>4</sup>,</span>
+    <span>Jianqiang Huang<sup>2,3,4,*</sup></span>
+  </p>
+  <p class="affil rise d2">
+    <sup>1</sup>同济大学 &nbsp;
+    <sup>2</sup>中国科学院计算机网络信息中心 &nbsp;
+    <sup>3</sup>中国科学院大学 &nbsp;
+    <sup>4</sup>中国科学院大学 HIAS &nbsp;
+    <sup>*</sup>通讯作者
+  </p>
+  <div class="cta rise d3">
+    <a class="btn primary" href="https://arxiv.org/abs/2603.07659">论文 · arXiv</a>
+    <a class="btn" href="https://arxiv.org/pdf/2603.07659">PDF</a>
+    <a class="btn" href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework">代码 · GitHub</a>
+    <a class="btn" href="https://github.com/KaihuaTang/Custom-Dataset-for-VLMEvalKit">ViLP.tsv（VLMEvalKit 格式）</a>
+    <a class="btn" href="#cite">BibTeX</a>
+  </div>
+
+  <div class="lede rise d4">
+    <div>
+      <h2>SCI 是什么？</h2>
+      <p><strong>自我批判推理（Self-Critical Inference, SCI）</strong>是一种作用于解码阶段的大型视觉语言模型（LVLM）推理框架。它用扰动后的提示词和扰动后的图像对同一问题进行多轮反事实推理，再对各轮的下一 token <em>logits</em> 进行比较与聚合，用同一个公式同时缓解<strong>语言偏见</strong>（含物体幻觉）与<strong>语言敏感性</strong>；反事实轮数越多，鲁棒性越高。</p>
+    </div>
+    <div>
+      <h2>DRBench 是什么？</h2>
+      <p><strong>动态鲁棒性基准（Dynamic Robustness Benchmark, DRBench）</strong>是一个针对具体模型的评测基准。给定任意 LVLM 与任意现有数据集，它自动筛选出<em>该模型自身</em>存在偏见或提示词敏感的样本。原因在于不同模型的失败样本差异显著，固定的鲁棒性基准无法反映模型的真实可靠性。</p>
+    </div>
+  </div>
+</header>
+
+<section id="abstract" class="wrap">
+  <div class="sec-head"><span class="no">§ 01</span><h2 class="title">摘要</h2></div>
+  <div class="prose">
+    <p>（以下为论文英文摘要的中文翻译，原文见 <a href="https://arxiv.org/abs/2603.07659">arXiv:2603.07659</a>。）</p>
+    <p>大语言模型（LLM）的出现推动了多模态学习的快速发展，尤其是大型视觉语言模型（LVLM）。然而，现有 LVLM 的训练范式过度依赖 LLM 部分，由此带来两个关键的鲁棒性挑战：语言偏见与语言敏感性。为同时解决这两个问题，我们提出自我批判推理（SCI）框架，它扩展了视觉对比解码（Visual Contrastive Decoding），通过文本与视觉两类扰动进行多轮反事实推理。这一过程也带来了一种提升鲁棒性的新策略：扩展反事实推理的轮数。此外，我们观察到不同 LVLM 的失败样本差异显著，说明固定的鲁棒性基准可能无法反映 LVLM 的真实可靠性。为此，我们提出动态鲁棒性基准（DRBench），一个同时针对语言偏见与语言敏感性的、模型相关的评测框架。大量实验表明，SCI 在 DRBench 上持续优于基线方法，并且增加推理轮数能够进一步提升鲁棒性，超越现有的单步反事实推理方法。</p>
+  </div>
+
+  <h3>LVLM 从 LLM 继承的两个鲁棒性问题</h3>
+  <div class="two">
+    <div class="card">
+      <h4>语言<i>偏见</i></h4>
+      <p>模型依赖语言先验作答而忽视视觉输入。这是传统 VQA 模型长期存在的问题，在 LVLM 中依然存在，并可能导致模型生成图像中不存在的内容，即物体幻觉。</p>
+    </div>
+    <div class="card">
+      <h4>语言<i>敏感性</i></h4>
+      <p>在不改变问题本身的前提下改写提示词（例如只是要求模型检查图像细节），模型就会给出不同答案。这损害了一致性与可靠性，是引入 LLM 之后新出现的问题。</p>
+    </div>
+  </div>
+</section>
+
+<section id="method" class="wrap">
+  <div class="sec-head"><span class="no">§ 02</span><h2 class="title">方法：从对比解码到自我批判推理</h2></div>
+  <h3>VCD 本质上是带温度系数的 TIE</h3>
+  <div class="prose">
+    <p>视觉对比解码（VCD）用加噪图像 <i>v*</i> 做第二次推理，并用对比后的 logits (1+α)·Z(v,q) − α·Z(v*,q) 解码。把 softmax 在 exp(·) 域展开可得：</p>
+  </div>
+  <div class="eq"><span class="lbl">Eq. 4</span>
+    <i>p</i>(<i>y</i> | <i>v</i>, <i>v</i>*, <i>q</i>) &nbsp;∝&nbsp; exp(<i>Z</i>(<i>v</i>,<i>q</i>)) · exp(TIE / <i>τ</i>), &nbsp;&nbsp; TIE = <i>Z</i>(<i>v</i>,<i>q</i>) − <i>Z</i>(<i>v</i>*,<i>q</i>), &nbsp; <i>τ</i> = 1/<i>α</i>
+  </div>
+  <div class="prose">
+    <p>也就是说，VCD 是用反事实 VQA（CF-VQA）与无偏场景图生成中的<strong>总间接效应（TIE）</strong>logits 对原始 token 概率做重加权，α 的作用是温度系数（τ = 1/α）。</p>
+  </div>
+  <h3>SCI 的统一形式</h3>
+  <div class="eq"><span class="lbl">Eq. 5</span>
+    <i>p</i><sub>SCI</sub>(<i>y</i> | <b><i>v</i></b>, <b><i>q</i></b>) &nbsp;∝&nbsp; <span class="tc">exp(TC / <i>τ</i><sub>1</sub>)</span> · <span class="vc">exp(VC / <i>τ</i><sub>2</sub>)</span>
+  </div>
+  <div class="eq"><span class="lbl">Eq. 6–7</span>
+    <span class="tc">TC<sub><i>k</i></sub> = max<sub><i>i</i></sub> <i>Z</i><sub><i>k</i></sub>(<i>v</i><sup>0</sup>, <i>q</i><sup><i>i</i></sup>)</span>, <i>i</i> = 0…<i>N</i> &nbsp;&nbsp;&nbsp;&nbsp;
+    <span class="vc">VC = <i>Z</i>(<i>v</i><sup>0</sup>, <i>q</i><sup>0</sup>) − 𝔼<sub><i>j</i></sub>[<i>Z</i>(<i>v</i><sup><i>j</i></sup>, <i>q</i><sup>0</sup>)]</span>, <i>j</i> = 1…<i>M</i>
+  </div>
+  <div class="prose">
+    <ul>
+      <li><strong>文本反事实（TC）</strong>：对原始提示词与 <i>N</i> 个“语义等价、措辞不同”的提示词的 logits 逐维取最大值，得到对提示词一致的 logits。</li>
+      <li><strong>视觉反事实（VC）</strong>：原始 logits 减去 <i>M</i> 张“去除内容的图像”下 logits 的均值，比单次 TIE 估计更稳定，用于去除语言先验。</li>
+      <li>沿用 VCD 的<strong>自适应合理性约束</strong>（Adaptive Plausibility Constraint），但改用经温度缩放的 TC logits 作为掩码依据。</li>
+      <li><strong>特例</strong>：VCD 即 <i>N</i>=0、<i>M</i>=1 的 SCI；CF-VQA 即 TC 为常数、<i>M</i>=1 的 SCI。</li>
+      <li><strong>SCI3 / SCI5 / SCI7</strong> 表示总推理轮数 <i>M</i>+<i>N</i>+1 = 3 / 5 / 7，即 <i>M</i>=<i>N</i>=1 / 2 / 3。</li>
+    </ul>
+  </div>
+  <div class="tbl">
+    <table>
+      <caption><b>反事实输入的构造</b>（与开源代码一致）</caption>
+      <thead><tr><th>名称</th><th>类型</th><th class="l">构造方式</th><th>使用者</th></tr></thead>
+      <tbody>
+        <tr><td>VC-Color0</td><td>视觉</td><td class="l">所有像素置为 RGB (0, 0, 0)，即全黑图像</td><td>SCI3 / 5 / 7</td></tr>
+        <tr><td>VC-Noise500</td><td>视觉</td><td class="l">扩散前向过程加噪 500 步（沿用 VCD 的加噪函数）</td><td>SCI5 / 7，TIE / VCD / M3ID 基线</td></tr>
+        <tr><td>VC-Noise400</td><td>视觉</td><td class="l">扩散前向过程加噪 400 步</td><td>SCI7</td></tr>
+        <tr><td>TC-V1</td><td>文本</td><td class="l">增加一句指令，要求模型关注图像细节</td><td>SCI3 / 5 / 7</td></tr>
+        <tr><td>TC-V2</td><td>文本</td><td class="l">在 TC-V1 的基础上切换指令语言（英文 ↔ 中文）</td><td>SCI5 / 7</td></tr>
+        <tr><td>TC-V3</td><td>文本</td><td class="l">注入身份信息（“你是一名擅长回答选择题的聪明学生”）</td><td>SCI7</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap">超参数：<i>τ</i><sub>1</sub> = 1.5 / 2.0 / 2.5（SCI3 / 5 / 7，代码参数 <code>gamma</code>），<i>τ</i><sub>2</sub> = 0.2（<code>beta</code>），合理性约束阈值 β = 0.3（DRBench）或 0.8（原始数据集）（<code>theta</code>）。超参数在 Qwen2-VL 的 BS 子集验证集上选定，并直接用于 LLaVA-NeXT。</p>
+</section>
+
+<section id="scaling" class="wrap">
+  <div class="sec-head"><span class="no">§ 03</span><h2 class="title">反事实轮数越多，鲁棒性越高</h2></div>
+  <div class="prose">
+    <p>已有的测试时扩展（test-time scaling）大多是在单次推理中增加中间思考 token 的长度。SCI 扩展的是另一个维度：参与 logit 聚合的反事实推理轮数。从基座模型（1 轮）到 SCI3、SCI5、SCI7，DRBench 三个子集上的总体准确率持续上升。</p>
+  </div>
+  <div class="legend" aria-hidden="true">
+    <span><i style="border-color:var(--s1)"></i>偏见子集（Bias Subset）</span>
+    <span><i style="border-color:var(--s2)"></i>敏感性子集（Sensitivity Subset）</span>
+    <span><i style="border-color:var(--s3)"></i>BS 子集（并集）</span>
+  </div>
+  <div class="charts">
+    <figure class="chart" style="margin:0"><h4>Qwen2-VL-7B</h4><p class="sub">在其自身 DRBench 上的总体 top-1 准确率（%）</p><svg viewBox="0 0 470 300" role="img" aria-label="qwen overall accuracy versus number of SCI inference rounds" data-chart='{"x": ["1 · 基座", "3 · SCI3", "5 · SCI5", "7 · SCI7"], "series": [{"name": "偏见子集", "color": "var(--s1)", "v": [6.11, 22.74, 25.09, 27.65]}, {"name": "敏感性子集", "color": "var(--s2)", "v": [36.06, 43.16, 44.58, 46.54]}, {"name": "BS 子集", "color": "var(--s3)", "v": [14.52, 26.94, 29.5, 31.72]}]}'><line class="grid" x1="36" x2="352" y1="248.0" y2="248.0"/><text x="28" y="252.0" text-anchor="end">0</text><line class="grid" x1="36" x2="352" y1="201.6" y2="201.6"/><text x="28" y="205.6" text-anchor="end">10</text><line class="grid" x1="36" x2="352" y1="155.2" y2="155.2"/><text x="28" y="159.2" text-anchor="end">20</text><line class="grid" x1="36" x2="352" y1="108.8" y2="108.8"/><text x="28" y="112.8" text-anchor="end">30</text><line class="grid" x1="36" x2="352" y1="62.4" y2="62.4"/><text x="28" y="66.4" text-anchor="end">40</text><line class="grid" x1="36" x2="352" y1="16.0" y2="16.0"/><text x="28" y="20.0" text-anchor="end">50</text><text x="58.0" y="268" text-anchor="middle">1 · 基座</text><text x="152.0" y="268" text-anchor="middle">3 · SCI3</text><text x="246.0" y="268" text-anchor="middle">5 · SCI5</text><text x="340.0" y="268" text-anchor="middle">7 · SCI7</text><text x="194.0" y="290" text-anchor="middle">推理轮数</text><line class="cross" x1="0" x2="0" y1="16" y2="248"/><polyline class="line" stroke="var(--s1)" points="58.0,219.6 152.0,142.5 246.0,131.6 340.0,119.7"/><polyline class="line" stroke="var(--s2)" points="58.0,80.7 152.0,47.7 246.0,41.1 340.0,32.1"/><polyline class="line" stroke="var(--s3)" points="58.0,180.6 152.0,123.0 246.0,111.1 340.0,100.8"/><circle class="dot" cx="58.0" cy="219.6" r="5" fill="var(--s1)"/><circle class="dot" cx="152.0" cy="142.5" r="5" fill="var(--s1)"/><circle class="dot" cx="246.0" cy="131.6" r="5" fill="var(--s1)"/><circle class="dot" cx="340.0" cy="119.7" r="5" fill="var(--s1)"/><text class="v" x="58.0" y="209.6" text-anchor="middle">6.11</text><text class="name" x="352.0" y="123.7">偏见子集 <tspan class="v">27.65</tspan></text><circle class="dot" cx="58.0" cy="80.7" r="5" fill="var(--s2)"/><circle class="dot" cx="152.0" cy="47.7" r="5" fill="var(--s2)"/><circle class="dot" cx="246.0" cy="41.1" r="5" fill="var(--s2)"/><circle class="dot" cx="340.0" cy="32.1" r="5" fill="var(--s2)"/><text class="v" x="58.0" y="70.7" text-anchor="middle">36.06</text><text class="name" x="352.0" y="36.1">敏感性子集 <tspan class="v">46.54</tspan></text><circle class="dot" cx="58.0" cy="180.6" r="5" fill="var(--s3)"/><circle class="dot" cx="152.0" cy="123.0" r="5" fill="var(--s3)"/><circle class="dot" cx="246.0" cy="111.1" r="5" fill="var(--s3)"/><circle class="dot" cx="340.0" cy="100.8" r="5" fill="var(--s3)"/><text class="v" x="58.0" y="170.6" text-anchor="middle">14.52</text><text class="name" x="352.0" y="104.8">BS 子集 <tspan class="v">31.72</tspan></text><rect class="hit" data-i="0" x="11.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="1" x="105.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="2" x="199.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="3" x="293.0" y="16" width="94.0" height="232" fill="transparent"/></svg><div class="tip"></div></figure>
+    <figure class="chart" style="margin:0"><h4>LLaVA-NeXT-8B</h4><p class="sub">在其自身 DRBench 上的总体 top-1 准确率（%）</p><svg viewBox="0 0 470 300" role="img" aria-label="llava overall accuracy versus number of SCI inference rounds" data-chart='{"x": ["1 · 基座", "3 · SCI3", "5 · SCI5", "7 · SCI7"], "series": [{"name": "偏见子集", "color": "var(--s1)", "v": [0.0, 23.48, 26.08, 27.01]}, {"name": "敏感性子集", "color": "var(--s2)", "v": [38.63, 47.2, 47.95, 47.64]}, {"name": "BS 子集", "color": "var(--s3)", "v": [18.75, 32.72, 34.19, 34.92]}]}'><line class="grid" x1="36" x2="352" y1="248.0" y2="248.0"/><text x="28" y="252.0" text-anchor="end">0</text><line class="grid" x1="36" x2="352" y1="201.6" y2="201.6"/><text x="28" y="205.6" text-anchor="end">10</text><line class="grid" x1="36" x2="352" y1="155.2" y2="155.2"/><text x="28" y="159.2" text-anchor="end">20</text><line class="grid" x1="36" x2="352" y1="108.8" y2="108.8"/><text x="28" y="112.8" text-anchor="end">30</text><line class="grid" x1="36" x2="352" y1="62.4" y2="62.4"/><text x="28" y="66.4" text-anchor="end">40</text><line class="grid" x1="36" x2="352" y1="16.0" y2="16.0"/><text x="28" y="20.0" text-anchor="end">50</text><text x="58.0" y="268" text-anchor="middle">1 · 基座</text><text x="152.0" y="268" text-anchor="middle">3 · SCI3</text><text x="246.0" y="268" text-anchor="middle">5 · SCI5</text><text x="340.0" y="268" text-anchor="middle">7 · SCI7</text><text x="194.0" y="290" text-anchor="middle">推理轮数</text><line class="cross" x1="0" x2="0" y1="16" y2="248"/><polyline class="line" stroke="var(--s1)" points="58.0,248.0 152.0,139.1 246.0,127.0 340.0,122.7"/><polyline class="line" stroke="var(--s2)" points="58.0,68.8 152.0,29.0 246.0,25.5 340.0,27.0"/><polyline class="line" stroke="var(--s3)" points="58.0,161.0 152.0,96.2 246.0,89.4 340.0,86.0"/><circle class="dot" cx="58.0" cy="248.0" r="5" fill="var(--s1)"/><circle class="dot" cx="152.0" cy="139.1" r="5" fill="var(--s1)"/><circle class="dot" cx="246.0" cy="127.0" r="5" fill="var(--s1)"/><circle class="dot" cx="340.0" cy="122.7" r="5" fill="var(--s1)"/><text class="v" x="58.0" y="238.0" text-anchor="middle">0.0</text><text class="name" x="352.0" y="126.7">偏见子集 <tspan class="v">27.01</tspan></text><circle class="dot" cx="58.0" cy="68.8" r="5" fill="var(--s2)"/><circle class="dot" cx="152.0" cy="29.0" r="5" fill="var(--s2)"/><circle class="dot" cx="246.0" cy="25.5" r="5" fill="var(--s2)"/><circle class="dot" cx="340.0" cy="27.0" r="5" fill="var(--s2)"/><text class="v" x="58.0" y="58.8" text-anchor="middle">38.63</text><text class="name" x="352.0" y="31.0">敏感性子集 <tspan class="v">47.64</tspan></text><circle class="dot" cx="58.0" cy="161.0" r="5" fill="var(--s3)"/><circle class="dot" cx="152.0" cy="96.2" r="5" fill="var(--s3)"/><circle class="dot" cx="246.0" cy="89.4" r="5" fill="var(--s3)"/><circle class="dot" cx="340.0" cy="86.0" r="5" fill="var(--s3)"/><text class="v" x="58.0" y="151.0" text-anchor="middle">18.75</text><text class="name" x="352.0" y="90.0">BS 子集 <tspan class="v">34.92</tspan></text><rect class="hit" data-i="0" x="11.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="1" x="105.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="2" x="199.0" y="16" width="94.0" height="232" fill="transparent"/><rect class="hit" data-i="3" x="293.0" y="16" width="94.0" height="232" fill="transparent"/></svg><div class="tip"></div></figure>
+  </div>
+  <p class="cap">数据来自论文表 2 的 Overall 列（80% 测试集）。</p>
+
+  <h3>额外轮数的开销</h3>
+  <div class="stats">
+    <div class="stat"><div class="n">1.29<small>×</small></div><p>SCI3 相对基座模型的推理时间（批量推理）</p></div>
+    <div class="stat"><div class="n">1.81<small>×</small></div><p>SCI5（批量推理）</p></div>
+    <div class="stat"><div class="n">2.48<small>×</small></div><p>SCI7（批量推理）</p></div>
+    <div class="stat"><div class="n"><em>6.68</em><small>×</small></div><p>SCI7 各轮顺序执行时（SCI3 为 2.96×，SCI5 为 5.01×）</p></div>
+  </div>
+  <p class="cap">测量条件：MMStar 数据集、Qwen2-VL、单张 NVIDIA A800 GPU（论文表 7）。论文还指出，共享未改变的视觉或文本 token 的 KV cache 是进一步加速的方向。</p>
+</section>
+
+<section id="drbench" class="wrap">
+  <div class="sec-head"><span class="no">§ 04</span><h2 class="title">DRBench：跟随模型变化的鲁棒性基准</h2></div>
+  <div class="prose">
+    <p>非鲁棒样本并不是固定的：测试集中有 <strong>24.68%</strong> 的样本对 LLaVA-NeXT 是困难样本，其中与 Qwen2-VL 共享的只有 <strong>7.34%</strong>。因此 DRBench 针对每个模型分两步构建：</p>
+    <ul>
+      <li><strong>评测</strong>：用原始输入、两种视觉反事实输入和两种文本反事实输入（<i>M</i>=<i>N</i>=2）在现有数据集上运行该模型。</li>
+      <li><strong>筛选</strong>：<strong>偏见子集（Bias Subset）</strong>收集在原始图像与去除内容的图像下给出相同错误预测的样本，说明模型依赖了虚假的语言先验；<strong>敏感性子集（Sensitivity Subset）</strong>收集预测随细微、非因果的提示词变化而改变的样本；<strong>BS 子集</strong>为二者的并集。</li>
+    </ul>
+    <p>论文使用 6 个常用基准构建 DRBench：MME、MMStar、CCBench、ViLP、MMBench-DEV-EN-V11、MMBench-DEV-CN-V11，随机划分为 20% 验证集（3,315 个样本）和 80% 测试集（13,251 个样本，其中选择题 MCQ 10,632 个，其他类型 2,619 个）。</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <caption><b>表 1.</b> DRBench 各子集在测试集上的样本数。</caption>
+      <thead><tr><th>构建所用模型</th><th>偏见子集 B</th><th>敏感性子集 S</th><th>BS 子集</th><th>重叠</th></tr></thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT（总体）</td><td>2155</td><td>1587</td><td>3270</td><td>472</td></tr>
+        <tr><td>Qwen2-VL（总体）</td><td>1407</td><td>563</td><td>1756</td><td>214</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl">
+    <table>
+      <caption><b>表 3.</b> BS 子集上的跨模型评测（top-1 准确率，%）。</caption>
+      <thead><tr><th>BS 子集的构建模型</th><th>被评测方法</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT</td><td>LLaVA-NeXT-Original</td><td>15.91</td><td>27.58</td><td>18.75</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT</td><td>LLaVA-NeXT-SCI5</td><td>28.80</td><td>51.01</td><td>34.19</td></tr>
+        <tr><td>LLaVA-NeXT</td><td>Qwen2-VL-Original</td><td>59.29</td><td>63.48</td><td>60.31</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT</td><td>Qwen2-VL-SCI5</td><td>61.15</td><td>67.88</td><td>62.78</td></tr>
+        <tr class="sep"><td>Qwen2-VL</td><td>Qwen2-VL-Original</td><td>10.78</td><td>23.59</td><td>14.52</td></tr>
+        <tr class="ours"><td>Qwen2-VL</td><td>Qwen2-VL-SCI5</td><td>28.00</td><td>33.14</td><td>29.50</td></tr>
+        <tr><td>Qwen2-VL</td><td>LLaVA-NeXT-Original</td><td>30.25</td><td>39.18</td><td>32.86</td></tr>
+        <tr class="ours"><td>Qwen2-VL</td><td>LLaVA-NeXT-SCI5</td><td>34.59</td><td>41.33</td><td>36.56</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="results" class="wrap">
+  <div class="sec-head"><span class="no">§ 05</span><h2 class="title">实验结果</h2></div>
+  <div class="prose">
+    <p>基座模型为 Hugging Face 版本的 Qwen2-VL-7B-Instruct（bfloat16，默认 top-k 采样）与 Llama3-LLaVA-NeXT-8B（float16，贪心解码）；对比方法为 TIE（改编自 CF-VQA）、VCD 与 M3ID。所有实验基于 VLMEvalKit，在单张 NVIDIA A800 80GB GPU 上完成，指标为 top-1 准确率（%）。</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <caption><b>表 2.</b> DRBench（80% 测试集）。B = 偏见子集，S = 敏感性子集，BS = 并集。此处列出 Overall 列，含 MCQ / Others 的完整表格见<a href="../#results">英文页</a>。</caption>
+      <thead><tr><th>方法</th><th>B 子集</th><th>S 子集</th><th>BS 子集</th></tr></thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT</td><td>0.0</td><td>38.63</td><td>18.75</td></tr>
+        <tr><td>LLaVA-NeXT-TIE</td><td>14.66</td><td>45.81</td><td>27.31</td></tr>
+        <tr><td>LLaVA-NeXT-VCD</td><td>14.71</td><td>46.38</td><td>27.89</td></tr>
+        <tr><td>LLaVA-NeXT-M3ID</td><td>18.24</td><td>45.94</td><td>29.05</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI3（本文）</td><td>23.48</td><td>47.20</td><td>32.72</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI5（本文）</td><td>26.08</td><td class="best">47.95</td><td>34.19</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI7（本文）</td><td class="best">27.01</td><td>47.64</td><td class="best">34.92</td></tr>
+        <tr class="sep"><td>Qwen2-VL</td><td>6.11</td><td>36.06</td><td>14.52</td></tr>
+        <tr><td>Qwen2-VL-TIE</td><td>16.35</td><td>40.67</td><td>22.32</td></tr>
+        <tr><td>Qwen2-VL-VCD</td><td>17.13</td><td>43.52</td><td>23.12</td></tr>
+        <tr><td>Qwen2-VL-M3ID</td><td>20.26</td><td>43.87</td><td>25.68</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI3（本文）</td><td>22.74</td><td>43.16</td><td>26.94</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI5（本文）</td><td>25.09</td><td>44.58</td><td>29.50</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI7（本文）</td><td class="best">27.65</td><td class="best">46.54</td><td class="best">31.72</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl">
+    <table>
+      <caption><b>表 4.</b> 6 个原始数据集（80% 测试集）上的总体准确率。SCI5 在两类题型上均有提升，而 TIE、VCD、M3ID 会降低 Others 题型的准确率。</caption>
+      <thead><tr><th>方法</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
+      <tbody>
+        <tr><td>LLaVA-NeXT</td><td>70.12</td><td>71.86</td><td>70.46</td></tr>
+        <tr><td>LLaVA-NeXT-TIE</td><td>70.36</td><td>70.68</td><td>70.42</td></tr>
+        <tr><td>LLaVA-NeXT-VCD</td><td>70.44</td><td>71.55</td><td>70.66</td></tr>
+        <tr><td>LLaVA-NeXT-M3ID</td><td>70.36</td><td>71.86</td><td>70.66</td></tr>
+        <tr class="ours"><td>LLaVA-NeXT-SCI5（本文）</td><td>70.32</td><td>72.70</td><td>70.79</td></tr>
+        <tr class="sep"><td>Qwen2-VL</td><td>80.91</td><td>79.27</td><td>80.58</td></tr>
+        <tr><td>Qwen2-VL-TIE</td><td>81.30</td><td>78.43</td><td>80.73</td></tr>
+        <tr><td>Qwen2-VL-VCD</td><td>81.42</td><td>78.58</td><td>80.86</td></tr>
+        <tr><td>Qwen2-VL-M3ID</td><td>81.25</td><td>78.31</td><td>80.67</td></tr>
+        <tr class="ours"><td>Qwen2-VL-SCI5（本文）</td><td>81.39</td><td>79.31</td><td>80.98</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="faq" class="wrap">
+  <div class="sec-head"><span class="no">§ 06</span><h2 class="title">论文回答的几个问题</h2></div>
+  <div class="faq">
+    <details open>
+      <summary>为什么基座模型在偏见子集上的准确率接近 0？</summary>
+      <p>DRBench 有意筛选最脆弱的困难样本。按定义，偏见子集收集的是基座模型持续预测错误的样本，因此理论准确率为 0.0。LLaVA-NeXT 使用贪心解码，结果是确定性的，所以恰好为 0.0；Qwen2-VL 默认使用 top-k 采样，所以为 6.11% 而不是 0。</p>
+    </details>
+    <details>
+      <summary>SCI 的计算开销有多大？如何加速？</summary>
+      <p>各轮反事实推理互相独立，可以放进同一个 batch。批量推理下 SCI3 / SCI5 / SCI7 的开销约为基座模型的 1.29× / 1.81× / 2.48×，顺序执行时为 2.96× / 5.01× / 6.68×。论文还提出可以共享未改变的视觉或文本 token 的 KV cache。</p>
+    </details>
+    <details>
+      <summary>SCI 与以往的测试时扩展研究有何不同？</summary>
+      <p>以往的测试时扩展大多增加中间思考 token 的长度，只能从最终答案判断对错。SCI 不停留在离散 token 输出上，而是通过比较和聚合反事实 logits 来分析连续的 logit 分布，信息量远大于最终预测的 token。</p>
+    </details>
+    <details>
+      <summary>SCI 的提升是否只是针对自身 DRBench 的“刷榜”？</summary>
+      <p>论文用跨模型评测（表 3）回答了这一点：在由<em>另一个</em>模型构建的脆弱样本集上，SCI 仍带来一致提升（Qwen2-VL 在 LLaVA-NeXT 子集上 60.31 → 62.78，LLaVA-NeXT 在 Qwen2-VL 子集上 32.86 → 36.56），只是相对提升幅度变小。同时 SCI 在 6 个原始数据集上保持或提升了准确率。</p>
+    </details>
+  </div>
+</section>
+
+<section id="code" class="wrap">
+  <div class="sec-head"><span class="no">§ 07</span><h2 class="title">代码与复现</h2></div>
+  <div class="prose">
+    <p><a href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework">代码仓库</a>基于 <a href="https://github.com/open-compass/VLMEvalKit/tree/v0.2">VLMEvalKit v0.2</a> 修改，在 Qwen2-VL 与 LLaVA-NeXT 的 <code>forward</code> 内部于 logit 层面实现了 SCI、TIE、VCD 与 M3ID，每种变体都是 <code>vlmeval/config.py</code> 中注册的一个模型名，例如 <code>Qwen2-VL-7B-SCI5-b02a1g2t03</code>。</p>
+  </div>
+  <ol class="steps">
+    <li><div><b>运行基座模型及其反事实变体</b><span><code>bash step0_run_basemodel.sh</code></span></div></li>
+    <li><div><b>构建该模型专属的 DRBench</b><span><code>bash step1_generate_data.sh</code>，生成偏见（<code>_VCF_</code>）、敏感性（<code>_TCF_</code>）与 BS（<code>_Biased_</code>）子集的验证 / 测试划分</span></div></li>
+    <li><div><b>在子集上重新运行基座模型并评测</b><span><code>bash step2_test_basemodel_a.sh</code>、<code>step2_test_basemodel_b.sh</code>，再用 <code>tools/evaluate_dataset.py</code> 计算准确率</span></div></li>
+    <li><div><b>在验证集上选择超参数</b><span><code>bash step3_validation_a.sh</code>、<code>step3_validation_b.sh</code>，再运行 <code>tools/validation.py</code></span></div></li>
+    <li><div><b>运行 TIE、VCD、M3ID 与 SCI</b><span><code>bash step4_test_algorithm_a.sh</code>、<code>step4_test_algorithm_b.sh</code></span></div></li>
+  </ol>
+  <p class="cap">完整说明见仓库 <a href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework#getting-started">README</a>。</p>
+</section>
+
+<section id="cite" class="wrap">
+  <div class="sec-head"><span class="no">§ 08</span><h2 class="title">引用</h2></div>
+  <div class="prose"><p>如果本项目对你的研究有帮助，欢迎引用我们的论文。</p></div>
+  <pre id="bib" lang="en"><button class="copy" data-copy="bib">copy</button>@inproceedings{tang2026scaling,
+  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
+  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year={2026}
+}</pre>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>代码以 Apache-2.0 许可证发布。本页所有数字均取自论文（arXiv:2603.07659v2）。代码基于 VLMEvalKit 构建，视觉加噪函数沿用 VCD 官方实现。<a href="../" lang="en">English version</a></p>
+  </div>
+</footer>
+
+<script src="../main.js" defer></script>
+</body>
+</html>

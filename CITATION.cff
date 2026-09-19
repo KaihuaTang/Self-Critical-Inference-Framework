@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you find this project helps your research, please cite our CVPR 2026 paper."
+title: "Self-Critical Inference Framework"
+type: software
+authors:
+  - family-names: Tang
+    given-names: Kaihua
+  - family-names: Qi
+    given-names: Jiaxin
+  - family-names: Ou
+    given-names: Jinli
+  - family-names: Zheng
+    given-names: Yuhua
+  - family-names: Huang
+    given-names: Jianqiang
+repository-code: "https://github.com/KaihuaTang/Self-Critical-Inference-Framework"
+url: "https://kaihuatang.github.io/Self-Critical-Inference-Framework/"
+license: Apache-2.0
+keywords:
+  - vision-language models
+  - robustness
+  - language bias
+  - language sensitivity
+  - object hallucination
+  - counterfactual inference
+  - contrastive decoding
+  - test-time scaling
+preferred-citation:
+  type: conference-paper
+  title: "Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework"
+  authors:
+    - family-names: Tang
+      given-names: Kaihua
+    - family-names: Qi
+      given-names: Jiaxin
+    - family-names: Ou
+      given-names: Jinli
+    - family-names: Zheng
+      given-names: Yuhua
+    - family-names: Huang
+      given-names: Jianqiang
+  collection-title: "Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)"
+  year: 2026
+  url: "https://arxiv.org/abs/2603.07659"
+  identifiers:
+    - type: other
+      value: "arXiv:2603.07659"
+      description: "arXiv preprint"
