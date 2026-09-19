@@ -95,6 +95,23 @@
       <p><strong>动态鲁棒性基准（Dynamic Robustness Benchmark, DRBench）</strong>是一个针对具体模型的评测基准。给定任意 LVLM 与任意现有数据集，它自动筛选出<em>该模型自身</em>存在偏见或提示词敏感的样本。原因在于不同模型的失败样本差异显著，固定的鲁棒性基准无法反映模型的真实可靠性。</p>
     </div>
   </div>
+
+  <div class="stats glance rise d5" aria-label="结果速览">
+    <div class="stat"><div class="n sm">18.75 <span>→</span> <em>34.92</em></div><p>LLaVA-NeXT-8B 在其自身非鲁棒样本（BS 子集）上的准确率（%），基座模型 → SCI7</p></div>
+    <div class="stat"><div class="n sm">14.52 <span>→</span> <em>31.72</em></div><p>Qwen2-VL-7B 在其自身 BS 子集上的准确率（%），基座模型 → SCI7</p></div>
+    <div class="stat"><div class="n sm">7.34<small>%</small></div><p>的测试样本对两个模型同时非鲁棒，而对 LLaVA-NeXT 非鲁棒的样本共有 24.68%：失败样本因模型而异</p></div>
+    <div class="stat"><div class="n sm">1.81<small>×</small></div><p>SCI5 在批量推理下相对基座模型的推理时间</p></div>
+  </div>
+
+  <div class="topcite rise d5" id="cite">
+    <p class="k">引用本文 · BibTeX</p>
+    <pre id="bib" lang="en"><button class="copy" data-copy="bib">copy</button>@inproceedings{tang2026scaling,
+  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
+  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year={2026}
+}</pre>
+  </div>
 </header>
 
 <section id="abstract" class="wrap">
@@ -121,13 +138,7 @@
   <div class="sec-head"><span class="no">§ 02</span><h2 class="title">方法：从对比解码到自我批判推理</h2></div>
   <h3>VCD 本质上是带温度系数的 TIE</h3>
   <div class="prose">
-    <p>视觉对比解码（VCD）用加噪图像 <i>v*</i> 做第二次推理，并用对比后的 logits (1+α)·Z(v,q) − α·Z(v*,q) 解码。把 softmax 在 exp(·) 域展开可得：</p>
-  </div>
-  <div class="eq"><span class="lbl">Eq. 4</span>
-    <i>p</i>(<i>y</i> | <i>v</i>, <i>v</i>*, <i>q</i>) &nbsp;∝&nbsp; exp(<i>Z</i>(<i>v</i>,<i>q</i>)) · exp(TIE / <i>τ</i>), &nbsp;&nbsp; TIE = <i>Z</i>(<i>v</i>,<i>q</i>) − <i>Z</i>(<i>v</i>*,<i>q</i>), &nbsp; <i>τ</i> = 1/<i>α</i>
-  </div>
-  <div class="prose">
-    <p>也就是说，VCD 是用反事实 VQA（CF-VQA）与无偏场景图生成中的<strong>总间接效应（TIE）</strong>logits 对原始 token 概率做重加权，α 的作用是温度系数（τ = 1/α）。</p>
+    <p>视觉对比解码（VCD）用加噪图像做第二次推理，并用对比后的 logits 解码。把它的 softmax 展开可以看到：VCD 其实是用 exp(TIE/τ) 对原始 token 概率做重加权，其中 TIE 是反事实 VQA（CF-VQA）与无偏场景图生成中提出的<strong>总间接效应</strong>，即真实图像下的 logits 减去加噪图像下的 logits；VCD 多出来的参数 α 起的是温度系数的作用（τ = 1/α）。</p>
   </div>
   <h3>SCI 的统一形式</h3>
   <div class="eq"><span class="lbl">Eq. 5</span>
@@ -180,17 +191,14 @@
   <p class="cap">数据来自论文表 2 的 Overall 列（80% 测试集）。</p>
 
   <h3>额外轮数的开销</h3>
-  <div class="stats">
-    <div class="stat"><div class="n">1.29<small>×</small></div><p>SCI3 相对基座模型的推理时间（批量推理）</p></div>
-    <div class="stat"><div class="n">1.81<small>×</small></div><p>SCI5（批量推理）</p></div>
-    <div class="stat"><div class="n">2.48<small>×</small></div><p>SCI7（批量推理）</p></div>
-    <div class="stat"><div class="n"><em>6.68</em><small>×</small></div><p>SCI7 各轮顺序执行时（SCI3 为 2.96×，SCI5 为 5.01×）</p></div>
-  </div>
-  <p class="cap">测量条件：MMStar 数据集、Qwen2-VL、单张 NVIDIA A800 GPU（论文表 7）。论文还指出，共享未改变的视觉或文本 token 的 KV cache 是进一步加速的方向。</p>
+  <figure class="fig" style="margin-left:0;margin-right:0"><!--FIG:overhead--><svg class="pf-overhead" viewBox="0 0 760 250" role="img" aria-label="Inference time relative to the base model: SCI3 2.96x sequential and 1.29x with batch inference, SCI5 5.01x and 1.81x, SCI7 6.68x and 2.48x."><style>.pf-overhead text{font-family:inherit;font-size:12px;fill:var(--ink-2)}.pf-overhead .t{fill:var(--ink);font-size:14px;font-weight:600}.pf-overhead .v{fill:var(--ink);font-weight:600;font-size:11.5px;paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}.pf-overhead .nm{fill:var(--ink)}.pf-overhead .h{fill:var(--ink);font-weight:600;font-size:12.5px}.pf-overhead .m{font-family:var(--mono);font-size:11px;fill:var(--ink)}.pf-overhead .grid{stroke:var(--rule)}.pf-overhead .ax{stroke:var(--ink-3)}.pf-overhead .f1{fill:var(--s1)}.pf-overhead .f2{fill:var(--s2)}.pf-overhead .f3{fill:var(--s3)}.pf-overhead .s1{stroke:var(--s1)}.pf-overhead .s2{stroke:var(--s2)}.pf-overhead .s3{stroke:var(--s3)}.pf-overhead .fg{fill:var(--ink-3)}.pf-overhead .fl{fill:var(--rule)}.pf-overhead .ring{stroke:var(--paper);stroke-width:2}.pf-overhead .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.pf-overhead .box{fill:var(--paper);stroke:var(--rule)}.pf-overhead .boxk{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pf-overhead .boxo{fill:var(--pen-soft);stroke:var(--pen);stroke-width:1.5}.pf-overhead .ar{stroke:var(--ink-3);stroke-width:1.5;fill:none}.pf-overhead .arh{fill:var(--ink-3)}</style><text x="20.0" y="28.0" class="t">相对基座模型的推理时间（Qwen2-VL，MMStar，单张 A800）</text><rect class="fg" x="20" y="40" width="12" height="12" rx="2"/><text x="37.0" y="50.5">各轮顺序执行</text><rect class="f1" x="129" y="40" width="12" height="12" rx="2"/><text x="146.0" y="50.5">批量推理</text><line class="grid" x1="70" x2="730" y1="212.0" y2="212.0"/><text x="62.0" y="216.0" text-anchor="end">0×</text><line class="grid" x1="70" x2="730" y1="192.0" y2="192.0"/><text x="62.0" y="196.0" text-anchor="end">1×</text><line class="grid" x1="70" x2="730" y1="172.0" y2="172.0"/><text x="62.0" y="176.0" text-anchor="end">2×</text><line class="grid" x1="70" x2="730" y1="152.0" y2="152.0"/><text x="62.0" y="156.0" text-anchor="end">3×</text><line class="grid" x1="70" x2="730" y1="132.0" y2="132.0"/><text x="62.0" y="136.0" text-anchor="end">4×</text><line class="grid" x1="70" x2="730" y1="112.0" y2="112.0"/><text x="62.0" y="116.0" text-anchor="end">5×</text><line class="grid" x1="70" x2="730" y1="92.0" y2="92.0"/><text x="62.0" y="96.0" text-anchor="end">6×</text><line class="grid" x1="70" x2="730" y1="72.0" y2="72.0"/><text x="62.0" y="76.0" text-anchor="end">7×</text><line class="ax" stroke-dasharray="4 3" x1="70" x2="730" y1="192.0" y2="192.0"/><text x="726.0" y="186.0" text-anchor="end">基座模型 = 1×</text><path class="fg" d="M110,212 v-56.2 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v56.2 z"/><text x="135.0" y="145.8" class="v" text-anchor="middle">2.96×</text><path class="f1" d="M168,212 v-22.8 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v22.8 z"/><text x="193.0" y="179.2" class="v" text-anchor="middle">1.29×</text><text x="164.0" y="232.0" class="nm" text-anchor="middle">SCI3</text><path class="fg" d="M295,212 v-97.2 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v97.2 z"/><text x="320.0" y="104.8" class="v" text-anchor="middle">5.01×</text><path class="f1" d="M353,212 v-33.2 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v33.2 z"/><text x="378.0" y="168.8" class="v" text-anchor="middle">1.81×</text><text x="349.0" y="232.0" class="nm" text-anchor="middle">SCI5</text><path class="fg" d="M480,212 v-130.6 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v130.6 z"/><text x="505.0" y="71.4" class="v" text-anchor="middle">6.68×</text><path class="f1" d="M538,212 v-46.6 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v46.6 z"/><text x="563.0" y="155.4" class="v" text-anchor="middle">2.48×</text><text x="534.0" y="232.0" class="nm" text-anchor="middle">SCI7</text></svg><!--/FIG:overhead--></figure>
+  <p class="cap">论文表 7：MMStar 数据集、Qwen2-VL、单张 NVIDIA A800 GPU 上每个样本的平均推理时间。基座模型 540.47 ms；批量推理下 SCI3 / SCI5 / SCI7 为 697.24 / 978.14 / 1342.86 ms，顺序执行时为 1599.65 / 2707.16 / 3611.18 ms。各轮反事实推理互相独立，可以放进同一个 batch；论文还指出，共享未改变的视觉或文本 token 的 KV cache 是进一步加速的方向。</p>
 </section>
 
 <section id="drbench" class="wrap">
   <div class="sec-head"><span class="no">§ 04</span><h2 class="title">DRBench：跟随模型变化的鲁棒性基准</h2></div>
+  <figure class="fig" style="margin-left:0;margin-right:0"><!--FIG:overlap--><svg class="pf-overlap" viewBox="0 0 760 176" role="img" aria-label="24.68% of the test samples are non-robust for LLaVA-NeXT and 13.25% for Qwen2-VL, but only 7.34% are shared between the two models."><style>.pf-overlap text{font-family:inherit;font-size:12px;fill:var(--ink-2)}.pf-overlap .t{fill:var(--ink);font-size:14px;font-weight:600}.pf-overlap .v{fill:var(--ink);font-weight:600;font-size:11.5px;paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}.pf-overlap .nm{fill:var(--ink)}.pf-overlap .h{fill:var(--ink);font-weight:600;font-size:12.5px}.pf-overlap .m{font-family:var(--mono);font-size:11px;fill:var(--ink)}.pf-overlap .grid{stroke:var(--rule)}.pf-overlap .ax{stroke:var(--ink-3)}.pf-overlap .f1{fill:var(--s1)}.pf-overlap .f2{fill:var(--s2)}.pf-overlap .f3{fill:var(--s3)}.pf-overlap .s1{stroke:var(--s1)}.pf-overlap .s2{stroke:var(--s2)}.pf-overlap .s3{stroke:var(--s3)}.pf-overlap .fg{fill:var(--ink-3)}.pf-overlap .fl{fill:var(--rule)}.pf-overlap .ring{stroke:var(--paper);stroke-width:2}.pf-overlap .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.pf-overlap .box{fill:var(--paper);stroke:var(--rule)}.pf-overlap .boxk{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pf-overlap .boxo{fill:var(--pen-soft);stroke:var(--pen);stroke-width:1.5}.pf-overlap .ar{stroke:var(--ink-3);stroke-width:1.5;fill:none}.pf-overlap .arh{fill:var(--ink-3)}</style><text x="20.0" y="28.0" class="t">非鲁棒样本因模型而异（占 13,251 个测试样本的比例）</text><rect class="fg" x="20" y="40" width="12" height="12" rx="2"/><text x="37.0" y="50.5">对另一个模型同样非鲁棒（7.34%）</text><rect class="f1" x="267" y="40" width="12" height="12" rx="2"/><text x="284.0" y="50.5">仅对该模型非鲁棒</text><line class="grid" x1="118.0" x2="118.0" y1="68" y2="146"/><text x="118.0" y="162.0" text-anchor="middle">0%</text><line class="grid" x1="211.3" x2="211.3" y1="68" y2="146"/><text x="211.3" y="162.0" text-anchor="middle">5%</text><line class="grid" x1="304.7" x2="304.7" y1="68" y2="146"/><text x="304.7" y="162.0" text-anchor="middle">10%</text><line class="grid" x1="398.0" x2="398.0" y1="68" y2="146"/><text x="398.0" y="162.0" text-anchor="middle">15%</text><line class="grid" x1="491.3" x2="491.3" y1="68" y2="146"/><text x="491.3" y="162.0" text-anchor="middle">20%</text><line class="grid" x1="584.7" x2="584.7" y1="68" y2="146"/><text x="584.7" y="162.0" text-anchor="middle">25%</text><line class="grid" x1="678.0" x2="678.0" y1="68" y2="146"/><text x="678.0" y="162.0" text-anchor="middle">30%</text><text x="108.0" y="91.0" class="nm" text-anchor="end">LLaVA-NeXT</text><rect class="fg" x="118" y="74" width="136.0" height="26"/><path class="f1" d="M256.0,74 h319.6 a3,3 0 0 1 3,3 v20 a3,3 0 0 1 -3,3 h-319.6 z"/><text x="586.6" y="91.0" class="v">24.68%  (3,270 / 13,251)</text><text x="108.0" y="129.0" class="nm" text-anchor="end">Qwen2-VL</text><rect class="fg" x="118" y="112" width="136.0" height="26"/><path class="f1" d="M256.0,112 h106.4 a3,3 0 0 1 3,3 v20 a3,3 0 0 1 -3,3 h-106.4 z"/><text x="373.4" y="129.0" class="v">13.25%  (1,756 / 13,251)</text></svg><!--/FIG:overlap--></figure>
+  <p class="cap">13,251 个测试样本中落入各模型 BS 子集的比例（表 1），以及两个模型共有的 7.34%。</p>
   <div class="prose">
     <p>非鲁棒样本并不是固定的：测试集中有 <strong>24.68%</strong> 的样本对 LLaVA-NeXT 是困难样本，其中与 Qwen2-VL 共享的只有 <strong>7.34%</strong>。因此 DRBench 针对每个模型分两步构建：</p>
     <ul>
@@ -232,9 +240,11 @@
   <div class="prose">
     <p>基座模型为 Hugging Face 版本的 Qwen2-VL-7B-Instruct（bfloat16，默认 top-k 采样）与 Llama3-LLaVA-NeXT-8B（float16，贪心解码）；对比方法为 TIE（改编自 CF-VQA）、VCD 与 M3ID。所有实验基于 VLMEvalKit，在单张 NVIDIA A800 80GB GPU 上完成，指标为 top-1 准确率（%）。</p>
   </div>
-  <div class="tbl">
-    <table>
-      <caption><b>表 2.</b> DRBench（80% 测试集）。B = 偏见子集，S = 敏感性子集，BS = 并集。此处列出 Overall 列，含 MCQ / Others 的完整表格见<a href="../#results">英文页</a>。</caption>
+
+  <figure class="fig" style="margin-left:0;margin-right:0"><!--FIG:methods--><svg class="pf-methods" viewBox="0 0 760 262" role="img" aria-label="Bar chart of overall accuracy on the BS Subset for the base model, TIE, VCD, M3ID, SCI3, SCI5 and SCI7, for LLaVA-NeXT-8B and Qwen2-VL-7B."><style>.pf-methods text{font-family:inherit;font-size:12px;fill:var(--ink-2)}.pf-methods .t{fill:var(--ink);font-size:14px;font-weight:600}.pf-methods .v{fill:var(--ink);font-weight:600;font-size:11.5px;paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}.pf-methods .nm{fill:var(--ink)}.pf-methods .h{fill:var(--ink);font-weight:600;font-size:12.5px}.pf-methods .m{font-family:var(--mono);font-size:11px;fill:var(--ink)}.pf-methods .grid{stroke:var(--rule)}.pf-methods .ax{stroke:var(--ink-3)}.pf-methods .f1{fill:var(--s1)}.pf-methods .f2{fill:var(--s2)}.pf-methods .f3{fill:var(--s3)}.pf-methods .s1{stroke:var(--s1)}.pf-methods .s2{stroke:var(--s2)}.pf-methods .s3{stroke:var(--s3)}.pf-methods .fg{fill:var(--ink-3)}.pf-methods .fl{fill:var(--rule)}.pf-methods .ring{stroke:var(--paper);stroke-width:2}.pf-methods .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.pf-methods .box{fill:var(--paper);stroke:var(--rule)}.pf-methods .boxk{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pf-methods .boxo{fill:var(--pen-soft);stroke:var(--pen);stroke-width:1.5}.pf-methods .ar{stroke:var(--ink-3);stroke-width:1.5;fill:none}.pf-methods .arh{fill:var(--ink-3)}</style><text x="20.0" y="28.0" class="t">DRBench 的 BS 子集 · 总体 top-1 准确率（%）</text><rect class="f1" x="20" y="40" width="12" height="12" rx="2"/><text x="37.0" y="50.5">SCI（本文）</text><rect class="fg" x="130.5" y="40" width="12" height="12" rx="2"/><text x="147.5" y="50.5">已有的反事实解码方法</text><rect class="fl" x="275.5" y="40" width="12" height="12" rx="2"/><text x="292.5" y="50.5">基座模型</text><text x="20.0" y="74.0" class="h">LLaVA-NeXT-8B</text><line class="grid" x1="66.0" x2="66.0" y1="84" y2="238"/><text x="66.0" y="253.0" text-anchor="middle">0</text><line class="grid" x1="128.5" x2="128.5" y1="84" y2="238"/><text x="128.5" y="253.0" text-anchor="middle">10</text><line class="grid" x1="191.0" x2="191.0" y1="84" y2="238"/><text x="191.0" y="253.0" text-anchor="middle">20</text><line class="grid" x1="253.5" x2="253.5" y1="84" y2="238"/><text x="253.5" y="253.0" text-anchor="middle">30</text><line class="grid" x1="316.0" x2="316.0" y1="84" y2="238"/><text x="316.0" y="253.0" text-anchor="middle">40</text><text x="58.0" y="98.0" text-anchor="end">Base</text><path class="fl" d="M66,87 h114.2 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-114.2 z"/><text x="189.2" y="98.5" class="v">18.75</text><text x="58.0" y="120.0" text-anchor="end">TIE</text><path class="fg" d="M66,109 h167.7 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-167.7 z"/><text x="242.7" y="120.5" class="v">27.31</text><text x="58.0" y="142.0" text-anchor="end">VCD</text><path class="fg" d="M66,131 h171.3 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-171.3 z"/><text x="246.3" y="142.5" class="v">27.89</text><text x="58.0" y="164.0" text-anchor="end">M3ID</text><path class="fg" d="M66,153 h178.6 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-178.6 z"/><text x="253.6" y="164.5" class="v">29.05</text><text x="58.0" y="186.0" class="nm" text-anchor="end">SCI3</text><path class="f1" d="M66,175 h201.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-201.5 z"/><text x="276.5" y="186.5" class="v">32.72</text><text x="58.0" y="208.0" class="nm" text-anchor="end">SCI5</text><path class="f1" d="M66,197 h210.7 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-210.7 z"/><text x="285.7" y="208.5" class="v">34.19</text><text x="58.0" y="230.0" class="nm" text-anchor="end">SCI7</text><path class="f1" d="M66,219 h215.2 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-215.2 z"/><text x="290.2" y="230.5" class="v">34.92</text><text x="400.0" y="74.0" class="h">Qwen2-VL-7B</text><line class="grid" x1="446.0" x2="446.0" y1="84" y2="238"/><text x="446.0" y="253.0" text-anchor="middle">0</text><line class="grid" x1="508.5" x2="508.5" y1="84" y2="238"/><text x="508.5" y="253.0" text-anchor="middle">10</text><line class="grid" x1="571.0" x2="571.0" y1="84" y2="238"/><text x="571.0" y="253.0" text-anchor="middle">20</text><line class="grid" x1="633.5" x2="633.5" y1="84" y2="238"/><text x="633.5" y="253.0" text-anchor="middle">30</text><line class="grid" x1="696.0" x2="696.0" y1="84" y2="238"/><text x="696.0" y="253.0" text-anchor="middle">40</text><text x="438.0" y="98.0" text-anchor="end">Base</text><path class="fl" d="M446,87 h87.8 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-87.8 z"/><text x="542.8" y="98.5" class="v">14.52</text><text x="438.0" y="120.0" text-anchor="end">TIE</text><path class="fg" d="M446,109 h136.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-136.5 z"/><text x="591.5" y="120.5" class="v">22.32</text><text x="438.0" y="142.0" text-anchor="end">VCD</text><path class="fg" d="M446,131 h141.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-141.5 z"/><text x="596.5" y="142.5" class="v">23.12</text><text x="438.0" y="164.0" text-anchor="end">M3ID</text><path class="fg" d="M446,153 h157.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-157.5 z"/><text x="612.5" y="164.5" class="v">25.68</text><text x="438.0" y="186.0" class="nm" text-anchor="end">SCI3</text><path class="f1" d="M446,175 h165.4 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-165.4 z"/><text x="620.4" y="186.5" class="v">26.94</text><text x="438.0" y="208.0" class="nm" text-anchor="end">SCI5</text><path class="f1" d="M446,197 h181.4 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-181.4 z"/><text x="636.4" y="208.5" class="v">29.50</text><text x="438.0" y="230.0" class="nm" text-anchor="end">SCI7</text><path class="f1" d="M446,219 h195.2 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-195.2 z"/><text x="650.2" y="230.5" class="v">31.72</text></svg><!--/FIG:methods--></figure>
+  <p class="cap">BS 子集（各模型偏见子集与敏感性子集的并集）上的总体 top-1 准确率（%），数据来自论文表 2。展开下方表格可查看各子集与原始数据集上的结果。</p>
+  <details class="fold"><summary><b>表 2.</b> DRBench（80% 测试集）。B = 偏见子集，S = 敏感性子集，BS = 并集。此处列出 Overall 列，含 MCQ / Others 的完整表格见<a href="../#results">英文页</a>。</summary>
+    <div class="tbl"><table>
       <thead><tr><th>方法</th><th>B 子集</th><th>S 子集</th><th>BS 子集</th></tr></thead>
       <tbody>
         <tr><td>LLaVA-NeXT</td><td>0.0</td><td>38.63</td><td>18.75</td></tr>
@@ -252,11 +262,10 @@
         <tr class="ours"><td>Qwen2-VL-SCI5（本文）</td><td>25.09</td><td>44.58</td><td>29.50</td></tr>
         <tr class="ours"><td>Qwen2-VL-SCI7（本文）</td><td class="best">27.65</td><td class="best">46.54</td><td class="best">31.72</td></tr>
       </tbody>
-    </table>
-  </div>
-  <div class="tbl">
-    <table>
-      <caption><b>表 4.</b> 6 个原始数据集（80% 测试集）上的总体准确率。SCI5 在两类题型上均有提升，而 TIE、VCD、M3ID 会降低 Others 题型的准确率。</caption>
+    </table></div>
+  </details>
+  <details class="fold"><summary><b>表 4.</b> 6 个原始数据集（80% 测试集）上的总体准确率。SCI5 在两类题型上均有提升，而 TIE、VCD、M3ID 会降低 Others 题型的准确率。</summary>
+    <div class="tbl"><table>
       <thead><tr><th>方法</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
       <tbody>
         <tr><td>LLaVA-NeXT</td><td>70.12</td><td>71.86</td><td>70.46</td></tr>
@@ -270,8 +279,8 @@
         <tr><td>Qwen2-VL-M3ID</td><td>81.25</td><td>78.31</td><td>80.67</td></tr>
         <tr class="ours"><td>Qwen2-VL-SCI5（本文）</td><td>81.39</td><td>79.31</td><td>80.98</td></tr>
       </tbody>
-    </table>
-  </div>
+    </table></div>
+  </details>
 </section>
 
 <section id="faq" class="wrap">
@@ -311,16 +320,6 @@
   <p class="cap">完整说明见仓库 <a href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework#getting-started">README</a>。</p>
 </section>
 
-<section id="cite" class="wrap">
-  <div class="sec-head"><span class="no">§ 08</span><h2 class="title">引用</h2></div>
-  <div class="prose"><p>如果本项目对你的研究有帮助，欢迎引用我们的论文。</p></div>
-  <pre id="bib" lang="en"><button class="copy" data-copy="bib">copy</button>@inproceedings{tang2026scaling,
-  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
-  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year={2026}
-}</pre>
-</section>
 </main>
 
 <footer>

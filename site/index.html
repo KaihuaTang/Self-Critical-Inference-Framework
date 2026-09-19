@@ -144,6 +144,23 @@
       <p>The <strong>Dynamic Robustness Benchmark (DRBench)</strong> is a model-specific benchmark. Given any LVLM and any existing dataset, it automatically extracts the samples on which <em>that</em> model is biased or prompt-sensitive, because the failure cases of LVLMs differ significantly across models and a fixed robustness benchmark cannot capture them.</p>
     </div>
   </div>
+
+  <div class="stats glance rise d5" aria-label="Results at a glance">
+    <div class="stat"><div class="n sm">18.75 <span>→</span> <em>34.92</em></div><p>LLaVA-NeXT-8B accuracy (%) on its own non-robust samples (BS Subset), base model → SCI7</p></div>
+    <div class="stat"><div class="n sm">14.52 <span>→</span> <em>31.72</em></div><p>Qwen2-VL-7B accuracy (%) on its own BS Subset, base model → SCI7</p></div>
+    <div class="stat"><div class="n sm">7.34<small>%</small></div><p>of test samples are non-robust for both models, although 24.68% are non-robust for LLaVA-NeXT: failure cases are model-specific</p></div>
+    <div class="stat"><div class="n sm">1.81<small>×</small></div><p>inference time of SCI5 relative to the base model with batch inference</p></div>
+  </div>
+
+  <div class="topcite rise d5" id="cite">
+    <p class="k">Cite this work · BibTeX</p>
+    <pre id="bib"><button class="copy" data-copy="bib">copy</button>@inproceedings{tang2026scaling,
+  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
+  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year={2026}
+}</pre>
+  </div>
 </header>
 
 <!-- ============ ABSTRACT ============ -->
@@ -181,13 +198,7 @@
 
   <h3>VCD is TIE with a temperature</h3>
   <div class="prose">
-    <p>Visual Contrastive Decoding (VCD) runs a second inference with a noisy image <i>v*</i> and decodes from the contrasted logits (1+α)·Z(v,q) − α·Z(v*,q). Expanding the softmax in the exp(·) domain shows what this really does:</p>
-  </div>
-  <div class="eq"><span class="lbl">Eq. 4</span>
-    <i>p</i>(<i>y</i> | <i>v</i>, <i>v</i>*, <i>q</i>) &nbsp;∝&nbsp; exp(<i>Z</i>(<i>v</i>,<i>q</i>)) · exp(TIE / <i>τ</i>), &nbsp;&nbsp; TIE = <i>Z</i>(<i>v</i>,<i>q</i>) − <i>Z</i>(<i>v</i>*,<i>q</i>), &nbsp; <i>τ</i> = 1/<i>α</i>
-  </div>
-  <div class="prose">
-    <p>VCD reweights the original token probability with the <strong>Total Indirect Effect (TIE)</strong> logits introduced by Counterfactual VQA (CF-VQA) and Unbiased Scene Graph Generation, which forces the model to rely on the visual difference. The extra parameter α of VCD is a temperature, τ = 1/α. Object hallucination is therefore treated as iterative biased token generation, and an LVLM is fundamentally no different from a conventional VQA classifier at every decoding step.</p>
+    <p>Visual Contrastive Decoding (VCD) runs a second inference with a noisy image and decodes from the contrasted logits. Expanding its softmax shows that VCD simply reweights the original token probability by exp(TIE/τ), where TIE, the <strong>Total Indirect Effect</strong> introduced by Counterfactual VQA (CF-VQA) and Unbiased Scene Graph Generation, is the logits with the real image minus the logits with the noisy image. The extra parameter α of VCD is a temperature, τ = 1/α. Object hallucination is therefore treated as iterative biased token generation, and an LVLM is fundamentally no different from a conventional VQA classifier at every decoding step.</p>
   </div>
 
   <h3>The SCI formulation</h3>
@@ -274,28 +285,15 @@
   <p class="cap">Data: Overall columns of Table 2 in the paper (80% test split). The full table with MCQ / Others breakdown is in <a href="#results">Results</a>.</p>
 
   <h3>What the extra rounds cost</h3>
-  <div class="stats">
-    <div class="stat"><div class="n">1.29<small>×</small></div><p>SCI3 inference time relative to the base model, with batch inference</p></div>
-    <div class="stat"><div class="n">1.81<small>×</small></div><p>SCI5, with batch inference</p></div>
-    <div class="stat"><div class="n">2.48<small>×</small></div><p>SCI7, with batch inference</p></div>
-    <div class="stat"><div class="n"><em>6.68</em><small>×</small></div><p>SCI7 when the rounds run sequentially (2.96× for SCI3, 5.01× for SCI5)</p></div>
-  </div>
-  <div class="tbl">
-    <table>
-      <caption><b>Table 7.</b> Average inference time per sample on MMStar, Qwen2-VL, one NVIDIA A800 GPU.</caption>
-      <thead><tr><th></th><th>Qwen2-VL</th><th>SCI3</th><th>SCI5</th><th>SCI7</th></tr></thead>
-      <tbody>
-        <tr><td>Sequential rounds</td><td>540.47 ms</td><td>1599.65 ms</td><td>2707.16 ms</td><td>3611.18 ms</td></tr>
-        <tr><td>Batch inference</td><td>540.47 ms</td><td>697.24 ms</td><td>978.14 ms</td><td>1342.86 ms</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="cap">All counterfactual rounds are independent forward passes, so they fit in one batch. The paper also points to KV-cache sharing of the unchanged visual or textual tokens as a future acceleration.</p>
+  <figure class="fig" style="margin-left:0;margin-right:0"><!--FIG:overhead--><svg class="pf-overhead" viewBox="0 0 760 250" role="img" aria-label="Inference time relative to the base model: SCI3 2.96x sequential and 1.29x with batch inference, SCI5 5.01x and 1.81x, SCI7 6.68x and 2.48x."><style>.pf-overhead text{font-family:inherit;font-size:12px;fill:var(--ink-2)}.pf-overhead .t{fill:var(--ink);font-size:14px;font-weight:600}.pf-overhead .v{fill:var(--ink);font-weight:600;font-size:11.5px;paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}.pf-overhead .nm{fill:var(--ink)}.pf-overhead .h{fill:var(--ink);font-weight:600;font-size:12.5px}.pf-overhead .m{font-family:var(--mono);font-size:11px;fill:var(--ink)}.pf-overhead .grid{stroke:var(--rule)}.pf-overhead .ax{stroke:var(--ink-3)}.pf-overhead .f1{fill:var(--s1)}.pf-overhead .f2{fill:var(--s2)}.pf-overhead .f3{fill:var(--s3)}.pf-overhead .s1{stroke:var(--s1)}.pf-overhead .s2{stroke:var(--s2)}.pf-overhead .s3{stroke:var(--s3)}.pf-overhead .fg{fill:var(--ink-3)}.pf-overhead .fl{fill:var(--rule)}.pf-overhead .ring{stroke:var(--paper);stroke-width:2}.pf-overhead .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.pf-overhead .box{fill:var(--paper);stroke:var(--rule)}.pf-overhead .boxk{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pf-overhead .boxo{fill:var(--pen-soft);stroke:var(--pen);stroke-width:1.5}.pf-overhead .ar{stroke:var(--ink-3);stroke-width:1.5;fill:none}.pf-overhead .arh{fill:var(--ink-3)}</style><text x="20.0" y="28.0" class="t">Inference time relative to the base model (Qwen2-VL, MMStar, one A800)</text><rect class="fg" x="20" y="40" width="12" height="12" rx="2"/><text x="37.0" y="50.5">rounds run sequentially</text><rect class="f1" x="203" y="40" width="12" height="12" rx="2"/><text x="219.6" y="50.5">batch inference</text><line class="grid" x1="70" x2="730" y1="212.0" y2="212.0"/><text x="62.0" y="216.0" text-anchor="end">0×</text><line class="grid" x1="70" x2="730" y1="192.0" y2="192.0"/><text x="62.0" y="196.0" text-anchor="end">1×</text><line class="grid" x1="70" x2="730" y1="172.0" y2="172.0"/><text x="62.0" y="176.0" text-anchor="end">2×</text><line class="grid" x1="70" x2="730" y1="152.0" y2="152.0"/><text x="62.0" y="156.0" text-anchor="end">3×</text><line class="grid" x1="70" x2="730" y1="132.0" y2="132.0"/><text x="62.0" y="136.0" text-anchor="end">4×</text><line class="grid" x1="70" x2="730" y1="112.0" y2="112.0"/><text x="62.0" y="116.0" text-anchor="end">5×</text><line class="grid" x1="70" x2="730" y1="92.0" y2="92.0"/><text x="62.0" y="96.0" text-anchor="end">6×</text><line class="grid" x1="70" x2="730" y1="72.0" y2="72.0"/><text x="62.0" y="76.0" text-anchor="end">7×</text><line class="ax" stroke-dasharray="4 3" x1="70" x2="730" y1="192.0" y2="192.0"/><text x="726.0" y="186.0" text-anchor="end">base model = 1×</text><path class="fg" d="M110,212 v-56.2 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v56.2 z"/><text x="135.0" y="145.8" class="v" text-anchor="middle">2.96×</text><path class="f1" d="M168,212 v-22.8 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v22.8 z"/><text x="193.0" y="179.2" class="v" text-anchor="middle">1.29×</text><text x="164.0" y="232.0" class="nm" text-anchor="middle">SCI3</text><path class="fg" d="M295,212 v-97.2 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v97.2 z"/><text x="320.0" y="104.8" class="v" text-anchor="middle">5.01×</text><path class="f1" d="M353,212 v-33.2 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v33.2 z"/><text x="378.0" y="168.8" class="v" text-anchor="middle">1.81×</text><text x="349.0" y="232.0" class="nm" text-anchor="middle">SCI5</text><path class="fg" d="M480,212 v-130.6 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v130.6 z"/><text x="505.0" y="71.4" class="v" text-anchor="middle">6.68×</text><path class="f1" d="M538,212 v-46.6 a3,3 0 0 1 3,-3 h44 a3,3 0 0 1 3,3 v46.6 z"/><text x="563.0" y="155.4" class="v" text-anchor="middle">2.48×</text><text x="534.0" y="232.0" class="nm" text-anchor="middle">SCI7</text></svg><!--/FIG:overhead--></figure>
+  <p class="cap">Table 7 of the paper, average time per sample on MMStar with Qwen2-VL on one NVIDIA A800 GPU: 540.47 ms for the base model; 697.24 / 978.14 / 1342.86 ms for SCI3 / SCI5 / SCI7 with batch inference, and 1599.65 / 2707.16 / 3611.18 ms when the rounds run sequentially. All counterfactual rounds are independent forward passes, so they fit in one batch. The paper also points to KV-cache sharing of the unchanged visual or textual tokens as a future acceleration.</p>
 </section>
 
 <!-- ============ DRBENCH ============ -->
 <section id="drbench" class="wrap">
   <div class="sec-head"><span class="no">§ 04</span><h2 class="title">DRBench: a robustness benchmark that follows the model</h2></div>
+  <figure class="fig" style="margin-left:0;margin-right:0"><!--FIG:overlap--><svg class="pf-overlap" viewBox="0 0 760 176" role="img" aria-label="24.68% of the test samples are non-robust for LLaVA-NeXT and 13.25% for Qwen2-VL, but only 7.34% are shared between the two models."><style>.pf-overlap text{font-family:inherit;font-size:12px;fill:var(--ink-2)}.pf-overlap .t{fill:var(--ink);font-size:14px;font-weight:600}.pf-overlap .v{fill:var(--ink);font-weight:600;font-size:11.5px;paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}.pf-overlap .nm{fill:var(--ink)}.pf-overlap .h{fill:var(--ink);font-weight:600;font-size:12.5px}.pf-overlap .m{font-family:var(--mono);font-size:11px;fill:var(--ink)}.pf-overlap .grid{stroke:var(--rule)}.pf-overlap .ax{stroke:var(--ink-3)}.pf-overlap .f1{fill:var(--s1)}.pf-overlap .f2{fill:var(--s2)}.pf-overlap .f3{fill:var(--s3)}.pf-overlap .s1{stroke:var(--s1)}.pf-overlap .s2{stroke:var(--s2)}.pf-overlap .s3{stroke:var(--s3)}.pf-overlap .fg{fill:var(--ink-3)}.pf-overlap .fl{fill:var(--rule)}.pf-overlap .ring{stroke:var(--paper);stroke-width:2}.pf-overlap .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.pf-overlap .box{fill:var(--paper);stroke:var(--rule)}.pf-overlap .boxk{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pf-overlap .boxo{fill:var(--pen-soft);stroke:var(--pen);stroke-width:1.5}.pf-overlap .ar{stroke:var(--ink-3);stroke-width:1.5;fill:none}.pf-overlap .arh{fill:var(--ink-3)}</style><text x="20.0" y="28.0" class="t">Non-robust samples are model-specific (share of the 13,251 test samples)</text><rect class="fg" x="20" y="40" width="12" height="12" rx="2"/><text x="37.0" y="50.5">also non-robust for the other model (7.34%)</text><rect class="f1" x="327" y="40" width="12" height="12" rx="2"/><text x="343.6" y="50.5">non-robust for this model only</text><line class="grid" x1="118.0" x2="118.0" y1="68" y2="146"/><text x="118.0" y="162.0" text-anchor="middle">0%</text><line class="grid" x1="211.3" x2="211.3" y1="68" y2="146"/><text x="211.3" y="162.0" text-anchor="middle">5%</text><line class="grid" x1="304.7" x2="304.7" y1="68" y2="146"/><text x="304.7" y="162.0" text-anchor="middle">10%</text><line class="grid" x1="398.0" x2="398.0" y1="68" y2="146"/><text x="398.0" y="162.0" text-anchor="middle">15%</text><line class="grid" x1="491.3" x2="491.3" y1="68" y2="146"/><text x="491.3" y="162.0" text-anchor="middle">20%</text><line class="grid" x1="584.7" x2="584.7" y1="68" y2="146"/><text x="584.7" y="162.0" text-anchor="middle">25%</text><line class="grid" x1="678.0" x2="678.0" y1="68" y2="146"/><text x="678.0" y="162.0" text-anchor="middle">30%</text><text x="108.0" y="91.0" class="nm" text-anchor="end">LLaVA-NeXT</text><rect class="fg" x="118" y="74" width="136.0" height="26"/><path class="f1" d="M256.0,74 h319.6 a3,3 0 0 1 3,3 v20 a3,3 0 0 1 -3,3 h-319.6 z"/><text x="586.6" y="91.0" class="v">24.68%  (3,270 / 13,251)</text><text x="108.0" y="129.0" class="nm" text-anchor="end">Qwen2-VL</text><rect class="fg" x="118" y="112" width="136.0" height="26"/><path class="f1" d="M256.0,112 h106.4 a3,3 0 0 1 3,3 v20 a3,3 0 0 1 -3,3 h-106.4 z"/><text x="373.4" y="129.0" class="v">13.25%  (1,756 / 13,251)</text></svg><!--/FIG:overlap--></figure>
+  <p class="cap">Shares of the 13,251 test samples that fall into each model’s BS Subset (Table 1), and the 7.34% that both models share.</p>
   <div class="prose">
     <p>Fixed robustness datasets are costly to build, can leak into the web-crawled training data of later models, and often use a single question type such as exist-or-not questions. More importantly, non-robust samples are not fixed: <strong>24.68%</strong> of the test samples are hard for LLaVA-NeXT, yet only <strong>7.34%</strong> are shared with Qwen2-VL. DRBench therefore builds the benchmark <em>per model</em>, in two steps.</p>
     <ul>
@@ -305,9 +303,8 @@
     <p>The paper constructs DRBench from six widely used benchmarks: MME, MMStar, CCBench, ViLP, MMBench-DEV-EN-V11 and MMBench-DEV-CN-V11, randomly split into 20% validation (3,315 samples) and 80% test (13,251 samples: 10,632 multiple-choice and 2,619 others). Results are reported for MCQ (multiple-choice questions) and Others (Yes/No for MME, open-ended QA for ViLP).</p>
   </div>
 
-  <div class="tbl">
-    <table>
-      <caption><b>Table 1.</b> Size of each DRBench subset on the test split. Qwen2-VL is generally more robust than LLaVA-NeXT, Qwen2-VL is more vulnerable to bias than to sensitivity, and LLaVA-NeXT shows more sensitivity issues.</caption>
+  <details class="fold"><summary><b>Table 1.</b> Size of each DRBench subset on the test split. Qwen2-VL is generally more robust than LLaVA-NeXT, Qwen2-VL is more vulnerable to bias than to sensitivity, and LLaVA-NeXT shows more sensitivity issues.</summary>
+    <div class="tbl"><table>
       <thead><tr><th>Construction model</th><th>B Subset</th><th>S Subset</th><th>BS Subset</th><th>Overlap</th></tr></thead>
       <tbody>
         <tr><td>LLaVA-NeXT (MCQ)</td><td>1810</td><td>1005</td><td>2476</td><td>339</td></tr>
@@ -317,8 +314,8 @@
         <tr><td>Qwen2-VL (Others)</td><td>327</td><td>311</td><td>513</td><td>125</td></tr>
         <tr><td>Qwen2-VL (Overall)</td><td>1407</td><td>563</td><td>1756</td><td>214</td></tr>
       </tbody>
-    </table>
-  </div>
+    </table></div>
+  </details>
 
   <div class="tbl">
     <table>
@@ -345,9 +342,11 @@
     <p>Base models: the Hugging Face versions of Qwen2-VL-7B-Instruct (bfloat16, default top-k sampling) and Llama3-LLaVA-NeXT-8B (float16, greedy decoding). Baselines: TIE adapted from CF-VQA, VCD, and M3ID, all with the adaptive plausibility constraint. All experiments use VLMEvalKit on a single NVIDIA A800 80GB GPU. The metric is top-1 accuracy (%).</p>
   </div>
 
-  <div class="tbl">
-    <table>
-      <caption><b>Table 2.</b> DRBench, 80% test split. B = Bias Subset, S = Sensitivity Subset, BS = union. Bold marks the best result per column and model.</caption>
+  <figure class="fig" style="margin-left:0;margin-right:0"><!--FIG:methods--><svg class="pf-methods" viewBox="0 0 760 262" role="img" aria-label="Bar chart of overall accuracy on the BS Subset for the base model, TIE, VCD, M3ID, SCI3, SCI5 and SCI7, for LLaVA-NeXT-8B and Qwen2-VL-7B."><style>.pf-methods text{font-family:inherit;font-size:12px;fill:var(--ink-2)}.pf-methods .t{fill:var(--ink);font-size:14px;font-weight:600}.pf-methods .v{fill:var(--ink);font-weight:600;font-size:11.5px;paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}.pf-methods .nm{fill:var(--ink)}.pf-methods .h{fill:var(--ink);font-weight:600;font-size:12.5px}.pf-methods .m{font-family:var(--mono);font-size:11px;fill:var(--ink)}.pf-methods .grid{stroke:var(--rule)}.pf-methods .ax{stroke:var(--ink-3)}.pf-methods .f1{fill:var(--s1)}.pf-methods .f2{fill:var(--s2)}.pf-methods .f3{fill:var(--s3)}.pf-methods .s1{stroke:var(--s1)}.pf-methods .s2{stroke:var(--s2)}.pf-methods .s3{stroke:var(--s3)}.pf-methods .fg{fill:var(--ink-3)}.pf-methods .fl{fill:var(--rule)}.pf-methods .ring{stroke:var(--paper);stroke-width:2}.pf-methods .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.pf-methods .box{fill:var(--paper);stroke:var(--rule)}.pf-methods .boxk{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}.pf-methods .boxo{fill:var(--pen-soft);stroke:var(--pen);stroke-width:1.5}.pf-methods .ar{stroke:var(--ink-3);stroke-width:1.5;fill:none}.pf-methods .arh{fill:var(--ink-3)}</style><text x="20.0" y="28.0" class="t">BS Subset of DRBench · overall top-1 accuracy (%)</text><rect class="f1" x="20" y="40" width="12" height="12" rx="2"/><text x="37.0" y="50.5">SCI (ours)</text><rect class="fg" x="114.0" y="40" width="12" height="12" rx="2"/><text x="131.0" y="50.5">prior counterfactual decoding</text><rect class="fl" x="329.6" y="40" width="12" height="12" rx="2"/><text x="346.6" y="50.5">base model</text><text x="20.0" y="74.0" class="h">LLaVA-NeXT-8B</text><line class="grid" x1="66.0" x2="66.0" y1="84" y2="238"/><text x="66.0" y="253.0" text-anchor="middle">0</text><line class="grid" x1="128.5" x2="128.5" y1="84" y2="238"/><text x="128.5" y="253.0" text-anchor="middle">10</text><line class="grid" x1="191.0" x2="191.0" y1="84" y2="238"/><text x="191.0" y="253.0" text-anchor="middle">20</text><line class="grid" x1="253.5" x2="253.5" y1="84" y2="238"/><text x="253.5" y="253.0" text-anchor="middle">30</text><line class="grid" x1="316.0" x2="316.0" y1="84" y2="238"/><text x="316.0" y="253.0" text-anchor="middle">40</text><text x="58.0" y="98.0" text-anchor="end">Base</text><path class="fl" d="M66,87 h114.2 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-114.2 z"/><text x="189.2" y="98.5" class="v">18.75</text><text x="58.0" y="120.0" text-anchor="end">TIE</text><path class="fg" d="M66,109 h167.7 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-167.7 z"/><text x="242.7" y="120.5" class="v">27.31</text><text x="58.0" y="142.0" text-anchor="end">VCD</text><path class="fg" d="M66,131 h171.3 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-171.3 z"/><text x="246.3" y="142.5" class="v">27.89</text><text x="58.0" y="164.0" text-anchor="end">M3ID</text><path class="fg" d="M66,153 h178.6 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-178.6 z"/><text x="253.6" y="164.5" class="v">29.05</text><text x="58.0" y="186.0" class="nm" text-anchor="end">SCI3</text><path class="f1" d="M66,175 h201.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-201.5 z"/><text x="276.5" y="186.5" class="v">32.72</text><text x="58.0" y="208.0" class="nm" text-anchor="end">SCI5</text><path class="f1" d="M66,197 h210.7 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-210.7 z"/><text x="285.7" y="208.5" class="v">34.19</text><text x="58.0" y="230.0" class="nm" text-anchor="end">SCI7</text><path class="f1" d="M66,219 h215.2 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-215.2 z"/><text x="290.2" y="230.5" class="v">34.92</text><text x="400.0" y="74.0" class="h">Qwen2-VL-7B</text><line class="grid" x1="446.0" x2="446.0" y1="84" y2="238"/><text x="446.0" y="253.0" text-anchor="middle">0</text><line class="grid" x1="508.5" x2="508.5" y1="84" y2="238"/><text x="508.5" y="253.0" text-anchor="middle">10</text><line class="grid" x1="571.0" x2="571.0" y1="84" y2="238"/><text x="571.0" y="253.0" text-anchor="middle">20</text><line class="grid" x1="633.5" x2="633.5" y1="84" y2="238"/><text x="633.5" y="253.0" text-anchor="middle">30</text><line class="grid" x1="696.0" x2="696.0" y1="84" y2="238"/><text x="696.0" y="253.0" text-anchor="middle">40</text><text x="438.0" y="98.0" text-anchor="end">Base</text><path class="fl" d="M446,87 h87.8 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-87.8 z"/><text x="542.8" y="98.5" class="v">14.52</text><text x="438.0" y="120.0" text-anchor="end">TIE</text><path class="fg" d="M446,109 h136.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-136.5 z"/><text x="591.5" y="120.5" class="v">22.32</text><text x="438.0" y="142.0" text-anchor="end">VCD</text><path class="fg" d="M446,131 h141.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-141.5 z"/><text x="596.5" y="142.5" class="v">23.12</text><text x="438.0" y="164.0" text-anchor="end">M3ID</text><path class="fg" d="M446,153 h157.5 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-157.5 z"/><text x="612.5" y="164.5" class="v">25.68</text><text x="438.0" y="186.0" class="nm" text-anchor="end">SCI3</text><path class="f1" d="M446,175 h165.4 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-165.4 z"/><text x="620.4" y="186.5" class="v">26.94</text><text x="438.0" y="208.0" class="nm" text-anchor="end">SCI5</text><path class="f1" d="M446,197 h181.4 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-181.4 z"/><text x="636.4" y="208.5" class="v">29.50</text><text x="438.0" y="230.0" class="nm" text-anchor="end">SCI7</text><path class="f1" d="M446,219 h195.2 a3,3 0 0 1 3,3 v10 a3,3 0 0 1 -3,3 h-195.2 z"/><text x="650.2" y="230.5" class="v">31.72</text></svg><!--/FIG:methods--></figure>
+  <p class="cap">Overall top-1 accuracy (%) on the BS Subset, the union of each model’s Bias and Sensitivity subsets (Table 2). Open the tables below for the MCQ / Others breakdown, the original datasets and the ablation.</p>
+
+  <details class="fold"><summary><b>Table 2.</b> DRBench, 80% test split. B = Bias Subset, S = Sensitivity Subset, BS = union. Bold marks the best result per column and model.</summary>
+    <div class="tbl"><table>
       <thead>
         <tr class="grp"><th></th><th colspan="3">B Subset</th><th colspan="3">S Subset</th><th colspan="3">BS Subset</th></tr>
         <tr><th>Method</th><th>MCQ</th><th>Others</th><th>Overall</th><th>MCQ</th><th>Others</th><th>Overall</th><th>MCQ</th><th>Others</th><th>Overall</th></tr>
@@ -368,12 +367,11 @@
         <tr class="ours"><td>Qwen2-VL-SCI5 (ours)</td><td>24.91</td><td>25.69</td><td>25.09</td><td class="best">47.22</td><td>42.44</td><td>44.58</td><td>28.00</td><td>33.14</td><td>29.50</td></tr>
         <tr class="ours"><td>Qwen2-VL-SCI7 (ours)</td><td class="best">27.04</td><td class="best">29.66</td><td class="best">27.65</td><td class="best">47.22</td><td class="best">45.98</td><td class="best">46.54</td><td class="best">29.61</td><td class="best">36.84</td><td class="best">31.72</td></tr>
       </tbody>
-    </table>
-  </div>
+    </table></div>
+  </details>
 
-  <div class="tbl">
-    <table>
-      <caption><b>Table 4.</b> The six original datasets, 80% test splits. MMB-C / MMB-E = MMBench-DEV-CN-V11 / EN-V11, CCB = CCBench, MMS = MMStar; MME scores are converted to accuracy. Vulnerable samples are only a portion of these datasets, so the margins are small, but SCI5 improves both question types while TIE, VCD and M3ID lower the accuracy on Others.</caption>
+  <details class="fold"><summary><b>Table 4.</b> The six original datasets, 80% test splits. MMB-C / MMB-E = MMBench-DEV-CN-V11 / EN-V11, CCB = CCBench, MMS = MMStar; MME scores are converted to accuracy. Vulnerable samples are only a portion of these datasets, so the margins are small, but SCI5 improves both question types while TIE, VCD and M3ID lower the accuracy on Others.</summary>
+    <div class="tbl"><table>
       <thead><tr><th>Method</th><th>MMB-C</th><th>MMB-E</th><th>MME</th><th>CCB</th><th>MMS</th><th>ViLP</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
       <tbody>
         <tr><td>LLaVA-NeXT</td><td>78.0</td><td>79.72</td><td>79.57</td><td>47.0</td><td>44.75</td><td>51.53</td><td>70.12</td><td>71.86</td><td>70.46</td></tr>
@@ -387,12 +385,11 @@
         <tr><td>Qwen2-VL-M3ID</td><td>85.69</td><td>86.46</td><td>86.10</td><td>73.96</td><td>59.75</td><td>57.78</td><td>81.25</td><td>78.31</td><td>80.67</td></tr>
         <tr class="ours"><td>Qwen2-VL-SCI5 (ours)</td><td>85.97</td><td>86.67</td><td>87.36</td><td>73.59</td><td>59.92</td><td>58.06</td><td>81.39</td><td>79.31</td><td>80.98</td></tr>
       </tbody>
-    </table>
-  </div>
+    </table></div>
+  </details>
 
-  <div class="tbl">
-    <table>
-      <caption><b>Table 5.</b> Ablation of counterfactual logit combinations with Qwen2-VL on the BS Subset. Rows 2–5 use one counterfactual input alone and stay near the base accuracy. Later rows aggregate the base logits with a growing set of counterfactual logits; the full SCI5 in the last row gives the best overall accuracy.</caption>
+  <details class="fold"><summary><b>Table 5.</b> Ablation of counterfactual logit combinations with Qwen2-VL on the BS Subset. Rows 2–5 use one counterfactual input alone and stay near the base accuracy. Later rows aggregate the base logits with a growing set of counterfactual logits; the full SCI5 in the last row gives the best overall accuracy.</summary>
+    <div class="tbl"><table>
       <thead><tr><th>Base</th><th>VC-Color0</th><th>VC-Noise500</th><th>TC-V1</th><th>TC-V2</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
       <tbody>
         <tr><td class="c" style="text-align:center">✓</td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td>10.78</td><td>23.59</td><td>14.52</td></tr>
@@ -410,8 +407,8 @@
         <tr><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c"></td><td>26.71</td><td>33.33</td><td>28.64</td></tr>
         <tr class="ours"><td class="c" style="text-align:center">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td>28.00</td><td>33.14</td><td>29.50</td></tr>
       </tbody>
-    </table>
-  </div>
+    </table></div>
+  </details>
 </section>
 
 <!-- ============ FAQ ============ -->
@@ -457,17 +454,6 @@
   <p class="cap">Full instructions, environment setup and the paper-to-code map are in the <a href="https://github.com/KaihuaTang/Self-Critical-Inference-Framework#getting-started">README</a>. ViLP.tsv for VLMEvalKit: <a href="https://github.com/KaihuaTang/Custom-Dataset-for-VLMEvalKit">KaihuaTang/Custom-Dataset-for-VLMEvalKit</a>.</p>
 </section>
 
-<!-- ============ CITE ============ -->
-<section id="cite" class="wrap">
-  <div class="sec-head"><span class="no">§ 08</span><h2 class="title">Citation</h2></div>
-  <div class="prose"><p>If you find this project helps your research, please kindly consider citing our paper in your publications.</p></div>
-  <pre id="bib"><button class="copy" data-copy="bib">copy</button>@inproceedings{tang2026scaling,
-  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
-  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year={2026}
-}</pre>
-</section>
 </main>
 
 <footer>

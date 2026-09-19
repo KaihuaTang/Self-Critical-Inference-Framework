@@ -69,7 +69,7 @@ a:hover { color: var(--pen); }
 .nav .sp { flex: 1; }
 
 /* ---------- hero ---------- */
-.hero { padding: 84px 0 56px; }
+.hero { padding-top: 84px; padding-bottom: 56px; }
 .venue {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase;
@@ -213,6 +213,24 @@ td.l, th.l { text-align: left; white-space: normal; }
 .stat .n em { font-style: normal; color: var(--pen); }
 .stat p { font-size: 13.5px; color: var(--ink-2); margin: 10px 0 0; line-height: 1.45; }
 
+/* ---------- figures, at-a-glance strip, folded tables ---------- */
+.fig { border: 1px solid var(--rule); background: var(--paper); padding: 16px 16px 10px; margin: 18px 0 6px; overflow-x: auto; }
+.fig svg { width: 100%; min-width: 640px; height: auto; display: block; }
+.glance { margin-top: 28px; }
+.stat .n.sm { font-size: 31px; line-height: 1.25; white-space: nowrap; }
+.stat .n.sm span { color: var(--ink-3); }
+.topcite { margin-top: 28px; }
+.topcite .k { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--pen); margin: 0 0 8px; }
+.topcite pre { margin: 0; }
+details.fold { border: 1px solid var(--rule); background: var(--paper); margin: 14px 0; }
+details.fold > summary { cursor: pointer; list-style: none; position: relative; padding: 12px 44px 12px 14px; font-size: 14px; color: var(--ink-2); }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary b { color: var(--ink); font-weight: 600; }
+details.fold > summary::after { content: "+"; position: absolute; right: 14px; top: 7px; font-family: var(--mono); font-size: 20px; color: var(--pen); }
+details.fold[open] > summary::after { content: "–"; }
+details.fold .tbl { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+@media (max-width: 860px) { .stat .n.sm { font-size: 24px; } }
+
 /* ---------- faq ---------- */
 .faq { max-width: 820px; }
 .faq details { border-bottom: 1px solid var(--rule); padding: 4px 0; }
@@ -248,7 +266,7 @@ footer p { max-width: 820px; }
 @media (max-width: 860px) {
   body { font-size: 16px; }
   .wrap { padding: 0 18px; }
-  .hero { padding: 56px 0 40px; }
+  .hero { padding-top: 56px; padding-bottom: 40px; }
   .lede, .two, .charts { grid-template-columns: 1fr; }
   .lede > div + div { border-left: 0; border-top: 1.5px solid var(--ink); }
   .stats { grid-template-columns: 1fr 1fr; }

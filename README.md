@@ -34,63 +34,42 @@ If you find this project helps your research, please kindly consider citing our 
 
 ## Key Results
 
-Top-1 accuracy (%) on the **BS Subset of DRBench** (Overall, 80% test split; Table 2 of the paper):
+<p align="center">
+  <img src="assets/figures/methods.svg" width="760" alt="Overall top-1 accuracy (%) on the BS Subset of DRBench. LLaVA-NeXT-8B: base 18.75, TIE 27.31, VCD 27.89, M3ID 29.05, SCI3 32.72, SCI5 34.19, SCI7 34.92. Qwen2-VL-7B: base 14.52, TIE 22.32, VCD 23.12, M3ID 25.68, SCI3 26.94, SCI5 29.50, SCI7 31.72.">
+</p>
 
-| Base LVLM | Base | TIE | VCD | M3ID | SCI3 | SCI5 | SCI7 |
-|---|---|---|---|---|---|---|---|
-| LLaVA-NeXT-8B | 18.75 | 27.31 | 27.89 | 29.05 | 32.72 | 34.19 | **34.92** |
-| Qwen2-VL-7B | 14.52 | 22.32 | 23.12 | 25.68 | 26.94 | 29.50 | **31.72** |
+- **SCI beats prior counterfactual decoding on the model's own hard cases.** On the BS Subset of DRBench (80% test split, Table 2), SCI7 lifts LLaVA-NeXT-8B from 18.75% to **34.92%** and Qwen2-VL-7B from 14.52% to **31.72%**; the best prior method, M3ID, reaches 29.05% and 25.68%.
+- **More counterfactual rounds, more robustness.** Accuracy rises from SCI3 to SCI5 to SCI7 for both models (figure below).
+- **No cost on standard benchmarks.** On the six original datasets (Table 4) SCI5 keeps or slightly improves overall accuracy: LLaVA-NeXT 70.46 → 70.79, Qwen2-VL 80.58 → 80.98.
+- **Modest overhead with batching.** SCI3 / SCI5 / SCI7 cost about 1.29× / 1.81× / 2.48× the base inference time with batch inference (2.96× / 5.01× / 6.68× when the rounds run sequentially).
 
-- More counterfactual rounds give higher robustness: accuracy on the BS Subset increases monotonically from SCI3 to SCI5 to SCI7 for both models.
-- On the six original datasets (Table 4), SCI5 keeps or slightly improves overall accuracy (LLaVA-NeXT 70.46 → 70.79, Qwen2-VL 80.58 → 80.98), so the gains on DRBench do not come at the cost of standard benchmark performance.
-- Non-robust samples are model-specific: 24.68% of the test samples are hard for LLaVA-NeXT, but only 7.34% are shared with Qwen2-VL. On the BS Subset built from LLaVA-NeXT, LLaVA-NeXT scores 18.75% while Qwen2-VL scores 60.31% (Table 3).
-- With batch inference, SCI3 / SCI5 / SCI7 cost about 1.29× / 1.81× / 2.48× the base inference time (2.96× / 5.01× / 6.68× when the rounds run sequentially), measured on MMStar with one NVIDIA A800 GPU.
+<p align="center">
+  <img src="assets/figures/scaling.svg" width="760" alt="Overall accuracy versus number of inference rounds (1 = base model, 3 = SCI3, 5 = SCI5, 7 = SCI7). Qwen2-VL-7B: Bias 6.11, 22.74, 25.09, 27.65; Sensitivity 36.06, 43.16, 44.58, 46.54; BS 14.52, 26.94, 29.50, 31.72. LLaVA-NeXT-8B: Bias 0.0, 23.48, 26.08, 27.01; Sensitivity 38.63, 47.20, 47.95, 47.64; BS 18.75, 32.72, 34.19, 34.92.">
+</p>
 
 Full tables are in the [Results](#results) section.
 
 ## Method
 
-### From VCD to TIE
+<p align="center">
+  <img src="assets/figures/diagram.svg" width="760" alt="One SCI5 decoding step. The original input, two textual counterfactual prompts (TC-V1, TC-V2) and two visual counterfactual images (VC-Color0, VC-Noise500) go through the LVLM. TC is the element-wise maximum of the original and textual counterfactual logits. VC is the original logits minus the mean of the visual counterfactual logits. The next token is decoded from TC/tau1 + VC/tau2 under an adaptive plausibility constraint.">
+</p>
 
-VCD runs a second inference with a noisy image $`v^{\ast}`$ and decodes from the contrasted logits:
-
-```math
-Z_{vcd} = (1+\alpha) Z(v,q) - \alpha Z(v^{\ast},q)
-```
-
-Rewriting the softmax of these logits in the exp domain gives
-
-```math
-p(y \mid v, v^{\ast}, q) \propto \exp(Z(v,q)) \cdot \exp(\mathrm{TIE}/\tau)
-```
-
-```math
-\mathrm{TIE} = Z(v,q) - Z(v^{\ast},q), \qquad \tau = 1/\alpha
-```
-
-So VCD reweights the original token distribution with the **Total Indirect Effect (TIE)** logits used by CF-VQA and Unbiased Scene Graph Generation, and 1/α plays the role of a temperature.
-
-### Self-Critical Inference
-
-SCI combines a **Textual Counterfactual (TC)** term for prompt consistency and a **Visual Counterfactual (VC)** term for visual grounding:
+For every generated token, SCI runs the LVLM on the original input plus N reworded prompts and M content-removed images, then combines the next-token logits:
 
 ```math
 p_{\mathrm{SCI}}(y \mid \boldsymbol{v}, \boldsymbol{q}) \propto \exp(\mathrm{TC}/\tau_{1}) \cdot \exp(\mathrm{VC}/\tau_{2})
 ```
 
 ```math
-\mathrm{TC}_{k} = \max_{i} Z_{k}(v^{0}, q^{i}), \qquad i = 0, 1, \dots, N
+\mathrm{TC}_{k} = \max_{i} Z_{k}(v^{0}, q^{i}), \qquad \mathrm{VC} = Z(v^{0}, q^{0}) - \mathbb{E}_{j}\left[ Z(v^{j}, q^{0}) \right]
 ```
 
-```math
-\mathrm{VC} = Z(v^{0}, q^{0}) - \mathbb{E}_{j}\left[ Z(v^{j}, q^{0}) \right], \qquad j = 1, \dots, M
-```
-
-- $`v^{0}`$ and $`q^{0}`$ are the original image and prompt; $`q^{i}`$ are semantically equivalent but lexically different prompts; $`v^{j}`$ are content-removed images.
-- TC takes the element-wise maximum over the N+1 prompt variants; VC averages over M counterfactual images for a more stable TIE estimate.
-- Following VCD, an **Adaptive Plausibility Constraint** masks low-confidence tokens before decoding: a token is kept only if its temperature-scaled TC logit is at least the maximum TC logit plus log β.
-- **VCD** is the special case N=0, M=1. **CF-VQA** is the special case with a constant TC term and M=1.
-- SCI3, SCI5, SCI7 denote M+N+1 = 3, 5, 7 total inference rounds, i.e. M=N=1, 2, 3.
+- **Textual Counterfactual (TC)** takes the element-wise maximum of the logits over the original prompt and N semantically equivalent but lexically different prompts, which makes the prediction consistent across prompts.
+- **Visual Counterfactual (VC)** subtracts the mean logits under M content-removed images from the original logits, which removes what the model would have said from language priors alone. Averaging several images gives a more stable estimate than a single one.
+- Following VCD, an **Adaptive Plausibility Constraint** keeps only tokens whose temperature-scaled TC logit is at least the maximum TC logit plus log β.
+- **Relation to prior work.** The paper shows that Visual Contrastive Decoding (VCD) is equivalent to reweighting the original token probability by exp(TIE/τ), where TIE is the Total Indirect Effect used by Counterfactual VQA (the logits with the real image minus the logits with a noisy image) and τ = 1/α. VCD is the special case N=0, M=1 of SCI, and CF-VQA is the special case with a constant TC term and M=1.
+- **SCI3, SCI5, SCI7** denote M+N+1 = 3, 5, 7 total inference rounds, i.e. M=N=1, 2, 3.
 
 ### Counterfactual inputs
 
@@ -124,12 +103,21 @@ DRBench converts any existing LVLM dataset into a robustness benchmark for one s
 
 Results are reported separately for **MCQ** (multiple-choice questions) and **Others** (Yes/No questions of MME and open-ended QA of ViLP). The exact matching rule is `get_biased_data` in [`tools/generate_dataset.py`](tools/generate_dataset.py).
 
-The paper builds DRBench from six benchmarks: **MME, MMStar, CCBench, ViLP, MMBench-DEV-EN-V11, MMBench-DEV-CN-V11**, split into 20% validation (3,315 samples) and 80% test (13,251 samples; 10,632 MCQ and 2,619 Others). Test-split subset sizes (Table 1):
+<p align="center">
+  <img src="assets/figures/overlap.svg" width="760" alt="Non-robust samples are model-specific: 24.68% of the 13,251 test samples (3,270) are non-robust for LLaVA-NeXT and 13.25% (1,756) for Qwen2-VL, but only 7.34% are shared by the two models.">
+</p>
+
+The paper builds DRBench from six benchmarks: **MME, MMStar, CCBench, ViLP, MMBench-DEV-EN-V11, MMBench-DEV-CN-V11**, split into 20% validation (3,315 samples) and 80% test (13,251 samples; 10,632 MCQ and 2,619 Others). The non-robust samples differ between models: 24.68% of the test samples are hard for LLaVA-NeXT, but only 7.34% are shared with Qwen2-VL. On the BS Subset built from LLaVA-NeXT, LLaVA-NeXT scores 18.75% while Qwen2-VL scores 60.31%. SCI5 still helps each model on the *other* model's subset (Qwen2-VL 60.31 → 62.78, LLaVA-NeXT 32.86 → 36.56; Table 3), so the gains are not tailored to a model's own DRBench.
+
+<details>
+<summary>Subset sizes on the test split (Table 1)</summary>
 
 | Construction model | B Subset | S Subset | BS Subset | Overlap |
 |---|---|---|---|---|
 | LLaVA-NeXT (MCQ / Others / Overall) | 1810 / 345 / 2155 | 1005 / 582 / 1587 | 2476 / 794 / 3270 | 339 / 133 / 472 |
 | Qwen2-VL (MCQ / Others / Overall) | 1080 / 327 / 1407 | 252 / 311 / 563 | 1243 / 513 / 1756 | 89 / 125 / 214 |
+
+</details>
 
 Generated split files follow this naming (written to the VLMEvalKit data root, `~/LMUData`):
 
@@ -235,9 +223,12 @@ The `--model` argument must be a name registered in [`vlmeval/config.py`](vlmeva
 
 ## Results
 
-### DRBench (Table 2)
+Top-1 accuracy (%) on the 80% test splits. The figures in [Key Results](#key-results) show the headline numbers; the complete tables are below.
 
-Top-1 accuracy (%) on the 80% test split. B = Bias Subset, S = Sensitivity Subset, BS = their union.
+<details>
+<summary><b>DRBench: Bias, Sensitivity and BS subsets, with MCQ / Others breakdown (Table 2)</b></summary>
+
+B = Bias Subset, S = Sensitivity Subset, BS = their union. Bold marks the best result per column and model.
 
 | Method | B: MCQ | B: Others | B: Overall | S: MCQ | S: Others | S: Overall | BS: MCQ | BS: Others | BS: Overall |
 |---|---|---|---|---|---|---|---|---|---|
@@ -256,11 +247,14 @@ Top-1 accuracy (%) on the 80% test split. B = Bias Subset, S = Sensitivity Subse
 | Qwen2-VL-SCI5 (ours) | 24.91 | 25.69 | 25.09 | **47.22** | 42.44 | 44.58 | 28.00 | 33.14 | 29.50 |
 | Qwen2-VL-SCI7 (ours) | **27.04** | **29.66** | **27.65** | **47.22** | **45.98** | **46.54** | **29.61** | **36.84** | **31.72** |
 
+</details>
+
 Why is the base accuracy on the Bias Subset (close to) zero? By definition the Bias Subset collects samples that the base model answers incorrectly, so its expected accuracy is 0.0. LLaVA-NeXT uses greedy decoding and scores exactly 0.0; Qwen2-VL uses top-k sampling by default, so its accuracy is slightly above zero.
 
-### Original datasets (Table 4)
+<details>
+<summary><b>The six original datasets (Table 4)</b></summary>
 
-Top-1 accuracy (%) on the 80% test splits. MMB-C / MMB-E = MMBench-DEV-CN-V11 / MMBench-DEV-EN-V11, CCB = CCBench, MMS = MMStar. MME scores are converted to accuracy.
+MMB-C / MMB-E = MMBench-DEV-CN-V11 / MMBench-DEV-EN-V11, CCB = CCBench, MMS = MMStar. MME scores are converted to accuracy.
 
 | Method | MMB-C | MMB-E | MME | CCB | MMS | ViLP | MCQ | Others | Overall |
 |---|---|---|---|---|---|---|---|---|---|
@@ -275,29 +269,15 @@ Top-1 accuracy (%) on the 80% test splits. MMB-C / MMB-E = MMBench-DEV-CN-V11 / 
 | Qwen2-VL-M3ID | 85.69 | 86.46 | 86.10 | 73.96 | 59.75 | 57.78 | 81.25 | 78.31 | 80.67 |
 | Qwen2-VL-SCI5 (ours) | 85.97 | 86.67 | 87.36 | 73.59 | 59.92 | 58.06 | 81.39 | 79.31 | 80.98 |
 
-### Cross-model evaluation on the BS Subset (Table 3)
+</details>
 
-| BS Subset constructed by | Evaluated method | MCQ | Others | Overall |
-|---|---|---|---|---|
-| LLaVA-NeXT | LLaVA-NeXT-Original | 15.91 | 27.58 | 18.75 |
-| LLaVA-NeXT | LLaVA-NeXT-SCI5 | 28.80 | 51.01 | 34.19 |
-| LLaVA-NeXT | Qwen2-VL-Original | 59.29 | 63.48 | 60.31 |
-| LLaVA-NeXT | Qwen2-VL-SCI5 | 61.15 | 67.88 | 62.78 |
-| Qwen2-VL | Qwen2-VL-Original | 10.78 | 23.59 | 14.52 |
-| Qwen2-VL | Qwen2-VL-SCI5 | 28.00 | 33.14 | 29.50 |
-| Qwen2-VL | LLaVA-NeXT-Original | 30.25 | 39.18 | 32.86 |
-| Qwen2-VL | LLaVA-NeXT-SCI5 | 34.59 | 41.33 | 36.56 |
+### Inference time
 
-SCI still improves a model on the vulnerable set derived from the *other* model, so the gains are not tailored to the model's own DRBench.
+<p align="center">
+  <img src="assets/figures/overhead.svg" width="760" alt="Inference time relative to the base model (Qwen2-VL on MMStar, one NVIDIA A800). SCI3: 2.96x sequential, 1.29x with batch inference. SCI5: 5.01x and 1.81x. SCI7: 6.68x and 2.48x.">
+</p>
 
-### Inference time (Table 7)
-
-Average time per sample on MMStar, one NVIDIA A800 GPU, Qwen2-VL:
-
-| | Qwen2-VL | SCI3 | SCI5 | SCI7 |
-|---|---|---|---|---|
-| Sequential rounds | 540.47 ms | 1599.65 ms (2.96×) | 2707.16 ms (5.01×) | 3611.18 ms (6.68×) |
-| Batch inference | 540.47 ms | 697.24 ms (1.29×) | 978.14 ms (1.81×) | 1342.86 ms (2.48×) |
+Average time per sample on MMStar with Qwen2-VL on one NVIDIA A800 GPU (Table 7): 540.47 ms for the base model; 697.24 / 978.14 / 1342.86 ms for SCI3 / SCI5 / SCI7 with batch inference, and 1599.65 / 2707.16 / 3611.18 ms when the rounds run sequentially.
 
 ## Acknowledgements
 
