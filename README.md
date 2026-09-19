@@ -19,6 +19,19 @@ by [Kaihua Tang](https://kaihuatang.github.io/), Jiaxin Qi, Jinli Ou, Yuhua Zhen
 - **Dynamic Robustness Benchmark (DRBench)** is a model-specific benchmark: for a given LVLM it automatically extracts that model's own non-robust samples (Bias Subset, Sensitivity Subset, and their union, the BS Subset) from existing datasets such as MMBench, MME, MMStar, CCBench, and ViLP.
 - SCI only changes how logits are combined at inference. This repository contains no training code; it evaluates the Hugging Face checkpoints `Qwen2-VL-7B-Instruct` and `llama3-llava-next-8b-hf` on top of [VLMEvalKit](https://github.com/open-compass/VLMEvalKit).
 
+## Citation
+
+If you find this project helps your research, please kindly consider citing our paper in your publications.
+
+```bibtex
+@inproceedings{tang2026scaling,
+  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
+  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year={2026}
+}
+```
+
 ## Key Results
 
 Top-1 accuracy (%) on the **BS Subset of DRBench** (Overall, 80% test split; Table 2 of the paper):
@@ -265,19 +278,6 @@ Average time per sample on MMStar, one NVIDIA A800 GPU, Qwen2-VL:
 |---|---|---|---|---|
 | Sequential rounds | 540.47 ms | 1599.65 ms (2.96×) | 2707.16 ms (5.01×) | 3611.18 ms (6.68×) |
 | Batch inference | 540.47 ms | 697.24 ms (1.29×) | 978.14 ms (1.81×) | 1342.86 ms (2.48×) |
-
-## Citation
-
-If you find this project helps your research, please kindly consider citing our paper in your publications.
-
-```bibtex
-@inproceedings{tang2026scaling,
-  title={Scaling Test-Time Robustness of Vision-Language Models via Self-Critical Inference Framework},
-  author={Tang, Kaihua and Qi, Jiaxin and Ou, Jinli and Zheng, Yuhua and Huang, Jianqiang},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year={2026}
-}
-```
 
 ## Acknowledgements
 
