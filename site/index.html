@@ -392,7 +392,7 @@
 
   <div class="tbl">
     <table>
-      <caption><b>Table 5.</b> Ablation of counterfactual logit combinations with Qwen2-VL on the BS Subset. A single counterfactual input alone does not help; the gain comes from comparing and aggregating logits, and it grows as rounds are added until the full SCI5.</caption>
+      <caption><b>Table 5.</b> Ablation of counterfactual logit combinations with Qwen2-VL on the BS Subset. Rows 2–5 use one counterfactual input alone and stay near the base accuracy. Later rows aggregate the base logits with a growing set of counterfactual logits; the full SCI5 in the last row gives the best overall accuracy.</caption>
       <thead><tr><th>Base</th><th>VC-Color0</th><th>VC-Noise500</th><th>TC-V1</th><th>TC-V2</th><th>MCQ</th><th>Others</th><th>Overall</th></tr></thead>
       <tbody>
         <tr><td class="c" style="text-align:center">✓</td><td class="c"></td><td class="c"></td><td class="c"></td><td class="c"></td><td>10.78</td><td>23.59</td><td>14.52</td></tr>
