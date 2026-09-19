@@ -52,25 +52,45 @@ Full tables are in the [Results](#results) section.
 
 ### From VCD to TIE
 
-VCD decodes from contrasted logits $(1+\alpha)\,Z(v,q)-\alpha\,Z(v^{*},q)$, where $v^{*}$ is a noisy image. Rewriting this in the $\exp(\cdot)$ domain gives
+VCD runs a second inference with a noisy image $`v^{\ast}`$ and decodes from the contrasted logits:
 
-$$p(y\mid v,v^{*},q)\;\propto\;\exp\big(Z(v,q)\big)\cdot\exp\big(\mathrm{TIE}/\tau\big),\qquad \mathrm{TIE}=Z(v,q)-Z(v^{*},q),\quad \tau=1/\alpha .$$
+```math
+Z_{vcd} = (1+\alpha) Z(v,q) - \alpha Z(v^{\ast},q)
+```
 
-So VCD reweights the original token distribution with the **Total Indirect Effect (TIE)** logits used by CF-VQA and Unbiased Scene Graph Generation, and $1/\alpha$ plays the role of a temperature.
+Rewriting the softmax of these logits in the exp domain gives
+
+```math
+p(y \mid v, v^{\ast}, q) \propto \exp(Z(v,q)) \cdot \exp(\mathrm{TIE}/\tau)
+```
+
+```math
+\mathrm{TIE} = Z(v,q) - Z(v^{\ast},q), \qquad \tau = 1/\alpha
+```
+
+So VCD reweights the original token distribution with the **Total Indirect Effect (TIE)** logits used by CF-VQA and Unbiased Scene Graph Generation, and 1/α plays the role of a temperature.
 
 ### Self-Critical Inference
 
 SCI combines a **Textual Counterfactual (TC)** term for prompt consistency and a **Visual Counterfactual (VC)** term for visual grounding:
 
-$$p_{\text{SCI}}(y\mid \boldsymbol{v},\boldsymbol{q})\;\propto\;\exp(\mathrm{TC}/\tau_{1})\cdot\exp(\mathrm{VC}/\tau_{2})$$
+```math
+p_{\mathrm{SCI}}(y \mid \boldsymbol{v}, \boldsymbol{q}) \propto \exp(\mathrm{TC}/\tau_{1}) \cdot \exp(\mathrm{VC}/\tau_{2})
+```
 
-$$\mathrm{TC}_{k}=\max_{i}\,Z_{k}(v^{0},q^{i}),\; i=0,\dots,N \qquad\qquad \mathrm{VC}=Z(v^{0},q^{0})-\mathbb{E}_{j}\big[Z(v^{j},q^{0})\big],\; j=1,\dots,M$$
+```math
+\mathrm{TC}_{k} = \max_{i} Z_{k}(v^{0}, q^{i}), \qquad i = 0, 1, \dots, N
+```
 
-- $v^{0}, q^{0}$ are the original image and prompt; $q^{i}$ are semantically equivalent but lexically different prompts; $v^{j}$ are content-removed images.
-- TC takes the element-wise maximum over the $N+1$ prompt variants; VC averages over $M$ counterfactual images for a more stable TIE estimate.
-- Following VCD, an **Adaptive Plausibility Constraint** masks tokens whose (temperature-scaled) TC logit is below $\max_k(\cdot)+\log\beta$ before decoding.
-- **VCD** is the special case $N=0, M=1$. **CF-VQA** is the special case with a constant TC term and $M=1$.
-- SCI3, SCI5, SCI7 denote $M+N+1 = 3, 5, 7$ total inference rounds, i.e. $M=N=1, 2, 3$.
+```math
+\mathrm{VC} = Z(v^{0}, q^{0}) - \mathbb{E}_{j}\left[ Z(v^{j}, q^{0}) \right], \qquad j = 1, \dots, M
+```
+
+- $`v^{0}`$ and $`q^{0}`$ are the original image and prompt; $`q^{i}`$ are semantically equivalent but lexically different prompts; $`v^{j}`$ are content-removed images.
+- TC takes the element-wise maximum over the N+1 prompt variants; VC averages over M counterfactual images for a more stable TIE estimate.
+- Following VCD, an **Adaptive Plausibility Constraint** masks low-confidence tokens before decoding: a token is kept only if its temperature-scaled TC logit is at least the maximum TC logit plus log β.
+- **VCD** is the special case N=0, M=1. **CF-VQA** is the special case with a constant TC term and M=1.
+- SCI3, SCI5, SCI7 denote M+N+1 = 3, 5, 7 total inference rounds, i.e. M=N=1, 2, 3.
 
 ### Counterfactual inputs
 
@@ -87,16 +107,16 @@ $$\mathrm{TC}_{k}=\max_{i}\,Z_{k}(v^{0},q^{i}),\; i=0,\dots,N \qquad\qquad \math
 
 | Paper | Code argument (`vlmeval/config.py`) | Value |
 |---|---|---|
-| $\tau_{1}$, temperature of TC | `gamma` | 1.5 (SCI3), 2.0 (SCI5), 2.5 (SCI7) |
-| $\tau_{2}$, temperature of VC | `beta` | 0.2 |
-| $\beta$, Adaptive Plausibility Constraint threshold | `theta` | 0.3 on DRBench; 0.8 on the original datasets |
-| $\alpha$ of VCD / M3ID | `alpha` | 1.0 (VCD), 0.02 (M3ID) |
+| τ₁, temperature of TC | `gamma` | 1.5 (SCI3), 2.0 (SCI5), 2.5 (SCI7) |
+| τ₂, temperature of VC | `beta` | 0.2 |
+| β, Adaptive Plausibility Constraint threshold | `theta` | 0.3 on DRBench; 0.8 on the original datasets |
+| α of VCD / M3ID | `alpha` | 1.0 (VCD), 0.02 (M3ID) |
 
 The suffix in a registered model name encodes these values, e.g. `Qwen2-VL-7B-SCI5-b02a1g2t03` means `beta=0.2, alpha=1, gamma=2, theta=0.3`. Hyperparameters were selected on the validation split of the Qwen2-VL BS Subset and applied to LLaVA-NeXT unchanged.
 
 ## Dynamic Robustness Benchmark (DRBench)
 
-DRBench converts any existing LVLM dataset into a robustness benchmark for one specific model, in two steps: (1) evaluate the dataset with the model under the original input, two visual counterfactual inputs, and two textual counterfactual inputs ($M=N=2$); (2) filter the samples:
+DRBench converts any existing LVLM dataset into a robustness benchmark for one specific model, in two steps: (1) evaluate the dataset with the model under the original input, two visual counterfactual inputs, and two textual counterfactual inputs (M=N=2); (2) filter the samples:
 
 - **Bias Subset (B)**: samples on which the model gives the same *incorrect* prediction under the original and the dummy (content-removed) visual inputs, indicating reliance on spurious language priors.
 - **Sensitivity Subset (S)**: samples whose prediction changes under subtle, non-causal prompt variations.
